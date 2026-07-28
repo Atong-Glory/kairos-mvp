@@ -19,6 +19,7 @@ import RoleManagement from './src/screens/Main/RoleManagement';
 import InviteCrew from './src/screens/Main/InviteCrew';
 import SceneManager from './src/screens/Main/SceneManager';
 import CallSheetView from './src/screens/Main/CallSheetView';
+import BudgetTracker from './src/screens/Main/BudgetTracker';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -49,6 +50,7 @@ function ProjectsStackNavigator() {
       <ProjectsStack.Screen name="InviteCrew" component={InviteCrew} />
       <ProjectsStack.Screen name="SceneManager" component={SceneManager} />
       <ProjectsStack.Screen name="CallSheetView" component={CallSheetView} />
+      <ProjectsStack.Screen name="BudgetTracker" component={BudgetTracker} />
     </ProjectsStack.Navigator>
   );
 }

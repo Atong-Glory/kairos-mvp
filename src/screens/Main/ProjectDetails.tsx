@@ -106,6 +106,8 @@ export default function ProjectDetails({ route, navigation }: any) {
                   navigation.navigate('RoleManagement', { projectId, project });
                 } else if (feature.id === 'schedule') {
                   navigation.navigate('SceneManager', { projectId, project });
+                } else if (feature.id === 'budget') {
+                  navigation.navigate('BudgetTracker', { projectId, project });
                 }
                 // Future implementation: navigation.navigate(feature.screen)
               }}
