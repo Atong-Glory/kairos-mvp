@@ -100,6 +100,9 @@ export default function ProjectDetails({ route, navigation }: any) {
               key={feature.id} 
               style={styles.gridItem}
               onPress={() => {
+                if (feature.id === 'script') {
+                  navigation.navigate('ScriptViewer', { projectId, project });
+                }
                 // Future implementation: navigation.navigate(feature.screen)
               }}
               activeOpacity={0.7}
