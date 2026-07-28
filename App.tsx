@@ -15,6 +15,8 @@ import Dashboard from './src/screens/Main/Dashboard';
 import CreateProject from './src/screens/Main/CreateProject';
 import ProjectDetails from './src/screens/Main/ProjectDetails';
 import ScriptViewer from './src/screens/Main/ScriptViewer';
+import RoleManagement from './src/screens/Main/RoleManagement';
+import InviteCrew from './src/screens/Main/InviteCrew';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -41,6 +43,8 @@ function ProjectsStackNavigator() {
       <ProjectsStack.Screen name="CreateProject" component={CreateProject} />
       <ProjectsStack.Screen name="ProjectDetails" component={ProjectDetails} />
       <ProjectsStack.Screen name="ScriptViewer" component={ScriptViewer} />
+      <ProjectsStack.Screen name="RoleManagement" component={RoleManagement} />
+      <ProjectsStack.Screen name="InviteCrew" component={InviteCrew} />
     </ProjectsStack.Navigator>
   );
 }

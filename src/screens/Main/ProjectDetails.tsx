@@ -102,6 +102,8 @@ export default function ProjectDetails({ route, navigation }: any) {
               onPress={() => {
                 if (feature.id === 'script') {
                   navigation.navigate('ScriptViewer', { projectId, project });
+                } else if (feature.id === 'roles') {
+                  navigation.navigate('RoleManagement', { projectId, project });
                 }
                 // Future implementation: navigation.navigate(feature.screen)
               }}
