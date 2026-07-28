@@ -20,6 +20,10 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "supabaseUrl": "https://hniojizunzgtyvuwucww.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhuaW9qaXp1bnpndHl2dXd1Y3d3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNTUwNjksImV4cCI6MjEwMDgzMTA2OX0.bPUhoqKtElD9CLbSIIWEBWQat5a7cmkMlrp2iQvpgmI"
     }
   }
 }
