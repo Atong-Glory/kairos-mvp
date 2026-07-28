@@ -104,6 +104,8 @@ export default function ProjectDetails({ route, navigation }: any) {
                   navigation.navigate('ScriptViewer', { projectId, project });
                 } else if (feature.id === 'roles') {
                   navigation.navigate('RoleManagement', { projectId, project });
+                } else if (feature.id === 'schedule') {
+                  navigation.navigate('SceneManager', { projectId, project });
                 }
                 // Future implementation: navigation.navigate(feature.screen)
               }}
