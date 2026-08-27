@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { supabase } from '../../lib/supabase';
+import { ProjectsScreenProps } from '../../navigation/types';
+import AnimatedPressable from '../../components/AnimatedPressable';
 
-export default function ProjectDetails({ route, navigation }: any) {
+export default function ProjectDetails({ route, navigation }: ProjectsScreenProps<'ProjectDetails'>) {
   const { projectId, project: initialProject } = route.params;
   const [project, setProject] = useState(initialProject);
   const [loading, setLoading] = useState(!initialProject);
@@ -76,7 +78,7 @@ export default function ProjectDetails({ route, navigation }: any) {
           <Icon name="arrow-back" size={24} color="#F8FAFC" />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{project.name}</Text>
-        <TouchableOpacity style={styles.settingsBtn}>
+        <TouchableOpacity style={styles.settingsBtn} onPress={() => navigation.navigate('ProjectSettings', { projectId, project })}>
           <Icon name="settings-outline" size={24} color="#F8FAFC" />
         </TouchableOpacity>
       </View>
@@ -96,9 +98,10 @@ export default function ProjectDetails({ route, navigation }: any) {
         
         <View style={styles.grid}>
           {features.map((feature) => (
-            <TouchableOpacity 
+            <AnimatedPressable 
               key={feature.id} 
               style={styles.gridItem}
+              scaleValue={0.97}
               onPress={() => {
                 if (feature.id === 'script') {
                   navigation.navigate('ScriptViewer', { projectId, project });
@@ -108,16 +111,18 @@ export default function ProjectDetails({ route, navigation }: any) {
                   navigation.navigate('SceneManager', { projectId, project });
                 } else if (feature.id === 'budget') {
                   navigation.navigate('BudgetTracker', { projectId, project });
+                } else if (feature.id === 'storyboard') {
+                  navigation.navigate('StoryboardContinuity', { projectId, project });
+                } else if (feature.id === 'communication') {
+                  navigation.navigate('TeamChat', { projectId, project });
                 }
-                // Future implementation: navigation.navigate(feature.screen)
               }}
-              activeOpacity={0.7}
             >
               <View style={[styles.iconContainer, { backgroundColor: `${feature.color}20` }]}>
                 <Icon name={feature.icon} size={28} color={feature.color} />
               </View>
               <Text style={styles.gridItemTitle}>{feature.title}</Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           ))}
         </View>
 

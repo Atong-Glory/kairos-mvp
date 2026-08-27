@@ -4,8 +4,10 @@ import { useAuth } from '../../context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { ProjectsScreenProps } from '../../navigation/types';
+import AnimatedPressable from '../../components/AnimatedPressable';
 
-export default function Dashboard({ navigation }: any) {
+export default function Dashboard({ navigation }: ProjectsScreenProps<'DashboardList'>) {
   const { user, tenantId, signOut } = useAuth();
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,13 +117,12 @@ export default function Dashboard({ navigation }: any) {
         />
       )}
 
-      <TouchableOpacity 
+      <AnimatedPressable 
         style={styles.fab} 
         onPress={() => navigation.navigate('CreateProject')}
-        activeOpacity={0.9}
       >
         <Icon name="add" size={32} color="#FFFFFF" />
-      </TouchableOpacity>
+      </AnimatedPressable>
     </SafeAreaView>
   );
 }

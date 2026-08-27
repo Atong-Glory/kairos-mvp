@@ -6,6 +6,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { supabase } from '../../lib/supabase';
+import Toast from 'react-native-toast-message';
+import { ProjectsScreenProps } from '../../navigation/types';
+import AnimatedPressable from '../../components/AnimatedPressable';
 
 type CrewMember = {
   role_name: string;
@@ -13,7 +16,7 @@ type CrewMember = {
   full_name: string;
 };
 
-export default function CallSheetView({ route, navigation }: any) {
+export default function CallSheetView({ route, navigation }: ProjectsScreenProps<'CallSheetView'>) {
   const { projectId, scene } = route.params;
   const [crew, setCrew] = useState<CrewMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +46,7 @@ export default function CallSheetView({ route, navigation }: any) {
       mapped.sort((a, b) => a.department.localeCompare(b.department));
       setCrew(mapped);
     } catch (err: any) {
-      Alert.alert('Error', err.message);
+      Toast.show({ type: 'error', text1: 'Error', text2: err.message });
     } finally {
       setLoading(false);
     }
@@ -66,9 +69,9 @@ export default function CallSheetView({ route, navigation }: any) {
       }], { onConflict: 'project_id,date' });
 
       if (error) throw error;
-      Alert.alert('Saved!', 'Call sheet has been saved to the project.');
+      Toast.show({ type: 'success', text1: 'Saved!', text2: 'Call sheet has been saved to the project.' });
     } catch (err: any) {
-      Alert.alert('Save Failed', err.message);
+      Toast.show({ type: 'error', text1: 'Save Failed', text2: err.message });
     } finally {
       setSaving(false);
     }
@@ -192,7 +195,7 @@ export default function CallSheetView({ route, navigation }: any) {
 
       {/* Save Button */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSaveCallSheet} disabled={saving}>
+        <AnimatedPressable style={styles.saveBtn} onPress={handleSaveCallSheet} disabled={saving}>
           {saving ? (
             <ActivityIndicator color="#fff" />
           ) : (
@@ -201,7 +204,7 @@ export default function CallSheetView({ route, navigation }: any) {
               <Text style={styles.saveBtnText}>Save Call Sheet</Text>
             </>
           )}
-        </TouchableOpacity>
+        </AnimatedPressable>
       </View>
     </SafeAreaView>
   );

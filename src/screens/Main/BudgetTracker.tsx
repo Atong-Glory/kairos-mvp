@@ -7,6 +7,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { supabase } from '../../lib/supabase';
+import Toast from 'react-native-toast-message';
+import { ProjectsScreenProps } from '../../navigation/types';
+import AnimatedPressable from '../../components/AnimatedPressable';
 
 type BudgetItem = {
   id: string;
@@ -41,7 +44,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 const formatCurrency = (n: number) =>
   `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-export default function BudgetTracker({ route, navigation }: any) {
+export default function BudgetTracker({ route, navigation }: ProjectsScreenProps<'BudgetTracker'>) {
   const { projectId } = route.params;
   const [items, setItems] = useState<BudgetItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,7 +94,7 @@ export default function BudgetTracker({ route, navigation }: any) {
 
   const handleSave = async () => {
     if (!form.description.trim() || !form.planned_amount) {
-      Alert.alert('Required', 'Please fill in description and planned amount.');
+      Toast.show({ type: 'error', text1: 'Required', text2: 'Please fill in description and planned amount.' });
       return;
     }
     setSaving(true);
@@ -109,7 +112,7 @@ export default function BudgetTracker({ route, navigation }: any) {
       ({ error } = await supabase.from('budget_items').insert([payload]));
     }
     setSaving(false);
-    if (error) { Alert.alert('Error', error.message); return; }
+    if (error) { Toast.show({ type: 'error', text1: 'Error', text2: error.message }); return; }
     setAddModal(false);
     fetchItems();
   };
@@ -296,9 +299,9 @@ export default function BudgetTracker({ route, navigation }: any) {
                 <TouchableOpacity style={styles.cancelBtn} onPress={() => setAddModal(false)}>
                   <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving}>
+                <AnimatedPressable style={styles.saveBtn} onPress={handleSave} disabled={saving}>
                   {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>{editItem ? 'Save Changes' : 'Add Item'}</Text>}
-                </TouchableOpacity>
+                </AnimatedPressable>
               </View>
             </View>
           </View>

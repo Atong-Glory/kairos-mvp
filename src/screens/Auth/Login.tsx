@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
+import { AuthScreenProps } from '../../navigation/types';
+import AnimatedPressable from '../../components/AnimatedPressable';
 
-export default function Login({ navigation }: any) {
+export default function Login({ navigation }: AuthScreenProps<'Login'>) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password');
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter email and password' });
       return;
     }
     
@@ -21,7 +24,7 @@ export default function Login({ navigation }: any) {
     });
     
     if (error) {
-      Alert.alert('Login Failed', error.message);
+      Toast.show({ type: 'error', text1: 'Login Failed', text2: error.message });
     }
     setLoading(false);
   };
@@ -57,13 +60,13 @@ export default function Login({ navigation }: any) {
           />
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+        <AnimatedPressable style={styles.button} onPress={handleLogin} disabled={loading}>
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.buttonText}>Sign In</Text>
           )}
-        </TouchableOpacity>
+        </AnimatedPressable>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account? </Text>

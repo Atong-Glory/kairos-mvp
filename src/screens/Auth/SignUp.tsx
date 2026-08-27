@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
+import { AuthScreenProps } from '../../navigation/types';
+import AnimatedPressable from '../../components/AnimatedPressable';
 
-export default function SignUp({ navigation }: any) {
+export default function SignUp({ navigation }: AuthScreenProps<'SignUp'>) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [tenantName, setTenantName] = useState('');
@@ -11,7 +14,7 @@ export default function SignUp({ navigation }: any) {
 
   const handleSignUp = async () => {
     if (!email || !password || !tenantName) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Please fill in all fields' });
       return;
     }
     
@@ -22,7 +25,7 @@ export default function SignUp({ navigation }: any) {
     });
     
     if (error) {
-      Alert.alert('Sign Up Failed', error.message);
+      Toast.show({ type: 'error', text1: 'Sign Up Failed', text2: error.message });
       setLoading(false);
       return;
     }
@@ -48,12 +51,12 @@ export default function SignUp({ navigation }: any) {
           
         if (userError) throw userError;
         
-        Alert.alert('Success', 'Account created! You can now log in.');
+        Toast.show({ type: 'success', text1: 'Success', text2: 'Account created! You can now log in.' });
         navigation.navigate('Login');
       }
     } catch (err: any) {
       console.error(err);
-      Alert.alert('Setup Error', err.message || 'Failed to setup production house.');
+      Toast.show({ type: 'error', text1: 'Setup Error', text2: err.message || 'Failed to setup production house.' });
     }
     
     setLoading(false);
@@ -101,13 +104,13 @@ export default function SignUp({ navigation }: any) {
           />
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={loading}>
+        <AnimatedPressable style={styles.button} onPress={handleSignUp} disabled={loading}>
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.buttonText}>Sign Up</Text>
           )}
-        </TouchableOpacity>
+        </AnimatedPressable>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Already have an account? </Text>

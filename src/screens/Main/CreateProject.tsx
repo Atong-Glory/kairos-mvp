@@ -4,20 +4,23 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Toast from 'react-native-toast-message';
+import { ProjectsScreenProps } from '../../navigation/types';
+import AnimatedPressable from '../../components/AnimatedPressable';
 
-export default function CreateProject({ navigation }: any) {
+export default function CreateProject({ navigation }: ProjectsScreenProps<'CreateProject'>) {
   const { tenantId } = useAuth();
   const [projectName, setProjectName] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
     if (!projectName.trim()) {
-      Alert.alert('Required', 'Please enter a project name.');
+      Toast.show({ type: 'error', text1: 'Required', text2: 'Please enter a project name.' });
       return;
     }
 
     if (!tenantId) {
-      Alert.alert('Error', 'Tenant ID is missing. Please log in again.');
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Tenant ID is missing. Please log in again.' });
       return;
     }
 
@@ -39,7 +42,7 @@ export default function CreateProject({ navigation }: any) {
       navigation.goBack();
     } catch (error: any) {
       console.error(error);
-      Alert.alert('Error', error.message || 'Failed to create project.');
+      Toast.show({ type: 'error', text1: 'Error', text2: error.message || 'Failed to create project.' });
     } finally {
       setLoading(false);
     }
@@ -75,7 +78,7 @@ export default function CreateProject({ navigation }: any) {
         </View>
 
         <View style={styles.footer}>
-          <TouchableOpacity 
+          <AnimatedPressable 
             style={[styles.button, !projectName.trim() && styles.buttonDisabled]} 
             onPress={handleCreate} 
             disabled={loading || !projectName.trim()}
@@ -85,7 +88,7 @@ export default function CreateProject({ navigation }: any) {
             ) : (
               <Text style={styles.buttonText}>Create Project</Text>
             )}
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

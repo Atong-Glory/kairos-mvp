@@ -5,6 +5,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { ActivityIndicator, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Toast from 'react-native-toast-message';
+import { AuthStackParamList, ProjectsStackParamList } from './src/navigation/types';
 
 // Auth Screens
 import Login from './src/screens/Auth/Login';
@@ -20,10 +22,14 @@ import InviteCrew from './src/screens/Main/InviteCrew';
 import SceneManager from './src/screens/Main/SceneManager';
 import CallSheetView from './src/screens/Main/CallSheetView';
 import BudgetTracker from './src/screens/Main/BudgetTracker';
+import StoryboardContinuity from './src/screens/Main/StoryboardContinuity';
+import TeamChat from './src/screens/Main/TeamChat';
+import VideoCall from './src/screens/Main/VideoCall';
+import ProjectSettings from './src/screens/Main/ProjectSettings';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<AuthStackParamList>();
 const Tab = createBottomTabNavigator();
-const ProjectsStack = createStackNavigator();
+const ProjectsStack = createStackNavigator<ProjectsStackParamList>();
 
 function AuthStack() {
   return (
@@ -51,6 +57,10 @@ function ProjectsStackNavigator() {
       <ProjectsStack.Screen name="SceneManager" component={SceneManager} />
       <ProjectsStack.Screen name="CallSheetView" component={CallSheetView} />
       <ProjectsStack.Screen name="BudgetTracker" component={BudgetTracker} />
+      <ProjectsStack.Screen name="StoryboardContinuity" component={StoryboardContinuity} />
+      <ProjectsStack.Screen name="TeamChat" component={TeamChat} />
+      <ProjectsStack.Screen name="VideoCall" component={VideoCall} />
+      <ProjectsStack.Screen name="ProjectSettings" component={ProjectSettings} />
     </ProjectsStack.Navigator>
   );
 }
@@ -106,6 +116,7 @@ export default function App() {
   return (
     <AuthProvider>
       <NavigationWrapper />
+      <Toast />
     </AuthProvider>
   );
 }

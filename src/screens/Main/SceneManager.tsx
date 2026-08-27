@@ -8,6 +8,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Calendar } from 'react-native-calendars';
 import { supabase } from '../../lib/supabase';
+import Toast from 'react-native-toast-message';
+import { ProjectsScreenProps } from '../../navigation/types';
+import AnimatedPressable from '../../components/AnimatedPressable';
 
 type Scene = {
   id: string;
@@ -27,7 +30,7 @@ const STATUS_COLORS: Record<string, string> = {
   omitted: '#64748B',
 };
 
-export default function SceneManager({ route, navigation }: any) {
+export default function SceneManager({ route, navigation }: ProjectsScreenProps<'SceneManager'>) {
   const { projectId, project } = route.params;
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +56,7 @@ export default function SceneManager({ route, navigation }: any) {
 
   const handleAddScene = async () => {
     if (!form.scene_number.trim() || !form.location.trim()) {
-      Alert.alert('Required', 'Scene number and location are required.');
+      Toast.show({ type: 'error', text1: 'Required', text2: 'Scene number and location are required.' });
       return;
     }
     setSaving(true);
@@ -68,7 +71,7 @@ export default function SceneManager({ route, navigation }: any) {
       status: 'pending',
     }]);
     setSaving(false);
-    if (error) { Alert.alert('Error', error.message); return; }
+    if (error) { Toast.show({ type: 'error', text1: 'Error', text2: error.message }); return; }
     setForm({ scene_number: '', location: '', day_night: 'DAY', description: '', characters: '' });
     setAddModalVisible(false);
     fetchScenes();
@@ -80,7 +83,7 @@ export default function SceneManager({ route, navigation }: any) {
       .from('scenes')
       .update({ scheduled_date: day.dateString, status: 'scheduled' })
       .eq('id', scheduleModal.scene.id);
-    if (error) { Alert.alert('Error', error.message); return; }
+    if (error) { Toast.show({ type: 'error', text1: 'Error', text2: error.message }); return; }
     setScheduleModal({ visible: false, scene: null });
     fetchScenes();
   };
@@ -230,9 +233,9 @@ export default function SceneManager({ route, navigation }: any) {
                 <TouchableOpacity style={styles.cancelBtn} onPress={() => setAddModalVisible(false)}>
                   <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.saveBtn} onPress={handleAddScene} disabled={saving}>
+                <AnimatedPressable style={styles.saveBtn} onPress={handleAddScene} disabled={saving}>
                   {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Add Scene</Text>}
-                </TouchableOpacity>
+                </AnimatedPressable>
               </View>
             </View>
           </View>

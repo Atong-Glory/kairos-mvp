@@ -6,16 +6,20 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
+import Toast from 'react-native-toast-message';
+import { ProjectsScreenProps } from '../../navigation/types';
+import AnimatedPressable from '../../components/AnimatedPressable';
 
-export default function InviteCrew({ route, navigation }: any) {
-  const { tenantId } = route.params;
+export default function InviteCrew({ route, navigation }: ProjectsScreenProps<'InviteCrew'>) {
+  const { tenantId } = useAuth();
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleInvite = async () => {
     if (!email.trim() || !fullName.trim()) {
-      Alert.alert('Required', 'Please fill in all fields.');
+      Toast.show({ type: 'error', text1: 'Required', text2: 'Please fill in all fields.' });
       return;
     }
 
@@ -46,14 +50,15 @@ export default function InviteCrew({ route, navigation }: any) {
         if (profileError) throw profileError;
       }
 
-      Alert.alert(
-        'Crew Member Added!',
-        `${fullName} has been added to your production house. They will receive a confirmation email to set their password.`
-      );
+      Toast.show({ 
+        type: 'success', 
+        text1: 'Crew Member Added!', 
+        text2: `${fullName} has been added to your production house.`
+      });
       navigation.goBack();
     } catch (err: any) {
       console.error(err);
-      Alert.alert('Error', err.message || 'Failed to add crew member.');
+      Toast.show({ type: 'error', text1: 'Error', text2: err.message || 'Failed to add crew member.' });
     } finally {
       setLoading(false);
     }
@@ -104,7 +109,7 @@ export default function InviteCrew({ route, navigation }: any) {
         </View>
 
         <View style={styles.footer}>
-          <TouchableOpacity
+          <AnimatedPressable
             style={[styles.button, (!email.trim() || !fullName.trim()) && styles.buttonDisabled]}
             onPress={handleInvite}
             disabled={loading || !email.trim() || !fullName.trim()}
@@ -117,7 +122,7 @@ export default function InviteCrew({ route, navigation }: any) {
                 <Text style={styles.buttonText}>Add to Production House</Text>
               </>
             )}
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

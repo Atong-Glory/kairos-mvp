@@ -6,8 +6,11 @@ import * as DocumentPicker from 'expo-document-picker';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import Pdf from 'react-native-pdf';
+import Toast from 'react-native-toast-message';
+import { ProjectsScreenProps } from '../../navigation/types';
+import AnimatedPressable from '../../components/AnimatedPressable';
 
-export default function ScriptViewer({ route, navigation }: any) {
+export default function ScriptViewer({ route, navigation }: ProjectsScreenProps<'ScriptViewer'>) {
   const { projectId, project } = route.params;
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -71,11 +74,11 @@ export default function ScriptViewer({ route, navigation }: any) {
           .eq('id', projectId);
       }
 
-      Alert.alert('Success', 'Script uploaded successfully!');
+      Toast.show({ type: 'success', text1: 'Success', text2: 'Script uploaded successfully!' });
       checkExistingScript(); // Reload the PDF
     } catch (error: any) {
       console.error('Upload Error:', error);
-      Alert.alert('Upload Failed', error.message || 'Could not upload the script.');
+      Toast.show({ type: 'error', text1: 'Upload Failed', text2: error.message || 'Could not upload the script.' });
     } finally {
       setUploading(false);
     }
@@ -110,7 +113,7 @@ export default function ScriptViewer({ route, navigation }: any) {
             }}
             onError={(error) => {
               console.error(error);
-              Alert.alert('PDF Error', 'Failed to load the PDF. It may be corrupted or the URL expired.');
+              Toast.show({ type: 'error', text1: 'PDF Error', text2: 'Failed to load the PDF. It may be corrupted or the URL expired.' });
             }}
             onPressLink={(uri) => {
               console.log(`Link pressed: ${uri}`);
@@ -125,10 +128,10 @@ export default function ScriptViewer({ route, navigation }: any) {
             <Text style={styles.emptySubText}>
               Upload the master PDF script to start breaking it down into scenes and assigning roles.
             </Text>
-            <TouchableOpacity style={styles.uploadBtn} onPress={handleUpload}>
+            <AnimatedPressable style={styles.uploadBtn} onPress={handleUpload}>
               <Icon name="add" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
               <Text style={styles.uploadBtnText}>Upload PDF</Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           </View>
         )}
       </View>

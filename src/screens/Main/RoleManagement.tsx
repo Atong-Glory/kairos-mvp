@@ -7,6 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import Toast from 'react-native-toast-message';
+import { ProjectsScreenProps } from '../../navigation/types';
+import AnimatedPressable from '../../components/AnimatedPressable';
 
 type RoleMaster = {
   id: string;
@@ -27,7 +30,7 @@ type TenantUser = {
   full_name: string;
 };
 
-export default function RoleManagement({ route, navigation }: any) {
+export default function RoleManagement({ route, navigation }: ProjectsScreenProps<'RoleManagement'>) {
   const { projectId, project } = route.params;
   const { tenantId } = useAuth();
 
@@ -72,7 +75,7 @@ export default function RoleManagement({ route, navigation }: any) {
       setProjectRoles(projectRolesRes.data || []);
       setTenantUsers(usersRes.data || []);
     } catch (err: any) {
-      Alert.alert('Error', err.message);
+      Toast.show({ type: 'error', text1: 'Error', text2: err.message });
     } finally {
       setLoading(false);
     }
@@ -114,7 +117,7 @@ export default function RoleManagement({ route, navigation }: any) {
       }
       fetchData();
     } catch (err: any) {
-      Alert.alert('Assignment Failed', err.message);
+      Toast.show({ type: 'error', text1: 'Assignment Failed', text2: err.message });
     }
   };
 
@@ -133,7 +136,7 @@ export default function RoleManagement({ route, navigation }: any) {
             if (error) throw error;
             fetchData();
           } catch (err: any) {
-            Alert.alert('Error', err.message);
+            Toast.show({ type: 'error', text1: 'Error', text2: err.message });
           }
         }
       }
@@ -183,9 +186,9 @@ export default function RoleManagement({ route, navigation }: any) {
           <Text style={styles.headerTitle}>Crew & Roles</Text>
           <Text style={styles.headerSub}>{projectRoles.length} assigned</Text>
         </View>
-        <TouchableOpacity style={styles.inviteBtn} onPress={() => navigation.navigate('InviteCrew', { tenantId })}>
+        <AnimatedPressable style={styles.inviteBtn} onPress={() => navigation.navigate('InviteCrew', { projectId, project })}>
           <Icon name="person-add-outline" size={22} color="#3B82F6" />
-        </TouchableOpacity>
+        </AnimatedPressable>
       </View>
 
       <Text style={styles.hint}>Tap to assign. Long-press to unassign.</Text>
