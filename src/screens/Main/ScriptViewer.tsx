@@ -3,9 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Dim
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as DocumentPicker from 'expo-document-picker';
+import { WebView } from 'react-native-webview';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
-import Pdf from 'react-native-pdf';
 import Toast from 'react-native-toast-message';
 import { ProjectsScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
@@ -103,23 +103,26 @@ export default function ScriptViewer({ route, navigation }: ProjectsScreenProps<
             <Text style={styles.statusText}>{uploading ? 'Uploading Script...' : 'Loading...'}</Text>
           </View>
         ) : pdfUrl ? (
-          <Pdf
-            source={{ uri: pdfUrl, cache: true }}
-            onLoadComplete={(numberOfPages, filePath) => {
-              console.log(`Number of pages: ${numberOfPages}`);
-            }}
-            onPageChanged={(page, numberOfPages) => {
-              console.log(`Current page: ${page}`);
-            }}
+          <WebView
+            source={{ uri: pdfUrl }}
+            style={styles.webview}
+            startInLoadingState
+            renderLoading={() => (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#3B82F6" />
+                <Text style={styles.loadingText}>Loading PDF...</Text>
+              </View>
+            )}
+            scalesPageToFit={true}
+            javaScriptEnabled={true}
             onError={(error) => {
-              console.error(error);
-              Toast.show({ type: 'error', text1: 'PDF Error', text2: 'Failed to load the PDF. It may be corrupted or the URL expired.' });
+              console.error('WebView Error:', error);
+              Toast.show({
+                type: 'error',
+                text1: 'PDF Error',
+                text2: 'Failed to load the PDF. It may be corrupted or the URL expired.',
+              });
             }}
-            onPressLink={(uri) => {
-              console.log(`Link pressed: ${uri}`);
-            }}
-            style={styles.pdf}
-            trustAllCerts={false}
           />
         ) : (
           <View style={styles.emptyContainer}>
@@ -214,10 +217,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  pdf: {
+  webview: {
     flex: 1,
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height,
     backgroundColor: '#0F172A',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0F172A',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#94A3B8',
   },
 });

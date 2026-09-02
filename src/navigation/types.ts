@@ -18,6 +18,7 @@ export type ProjectsStackParamList = {
   StoryboardContinuity: { projectId: string; project?: any };
   TeamChat: { projectId: string; project?: any };
   VideoCall: { projectId: string; project?: any };
+  ProjectSettings: { projectId: string; project?: any };
 };
 
 export type AuthScreenProps<T extends keyof AuthStackParamList> = StackScreenProps<AuthStackParamList, T>;

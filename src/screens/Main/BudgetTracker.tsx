@@ -7,6 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { supabase } from '../../lib/supabase';
+import { usePermissions } from '../../context/PermissionsContext';
 import Toast from 'react-native-toast-message';
 import { ProjectsScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
@@ -46,6 +47,9 @@ const formatCurrency = (n: number) =>
 
 export default function BudgetTracker({ route, navigation }: ProjectsScreenProps<'BudgetTracker'>) {
   const { projectId } = route.params;
+  const { isEditor } = usePermissions();
+  const canEdit = isEditor(projectId);
+  
   const [items, setItems] = useState<BudgetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [addModal, setAddModal] = useState(false);
@@ -76,12 +80,20 @@ export default function BudgetTracker({ route, navigation }: ProjectsScreenProps
   const remaining = totalPlanned - totalActual;
 
   const openAdd = () => {
+    if (!canEdit) {
+      Toast.show({ type: 'error', text1: 'Permission Denied', text2: 'Only editors can add budget items.' });
+      return;
+    }
     setEditItem(null);
     setForm(emptyForm);
     setAddModal(true);
   };
 
   const openEdit = (item: BudgetItem) => {
+    if (!canEdit) {
+      Toast.show({ type: 'info', text1: 'View-Only Mode', text2: 'You don\'t have permission to edit budget items.' });
+      return;
+    }
     setEditItem(item);
     setForm({
       category: item.category,
@@ -118,6 +130,10 @@ export default function BudgetTracker({ route, navigation }: ProjectsScreenProps
   };
 
   const handleDelete = (item: BudgetItem) => {
+    if (!canEdit) {
+      Toast.show({ type: 'error', text1: 'Permission Denied', text2: 'Only editors can delete budget items.' });
+      return;
+    }
     Alert.alert('Delete Item', `Delete "${item.description}"?`, [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -145,10 +161,21 @@ export default function BudgetTracker({ route, navigation }: ProjectsScreenProps
           <Icon name="arrow-back" size={24} color="#F8FAFC" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Budget Tracker</Text>
-        <TouchableOpacity style={styles.addBtn} onPress={openAdd}>
-          <Icon name="add" size={24} color="#3B82F6" />
-        </TouchableOpacity>
+        {canEdit ? (
+          <TouchableOpacity style={styles.addBtn} onPress={openAdd}>
+            <Icon name="add" size={24} color="#3B82F6" />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.addBtn} />
+        )}
       </View>
+
+      {!canEdit && (
+        <View style={styles.permissionNotice}>
+          <Icon name="lock-closed" size={16} color="#F59E0B" />
+          <Text style={styles.permissionText}>Budget data is view-only for your role</Text>
+        </View>
+      )}
 
       {loading ? (
         <View style={styles.center}><ActivityIndicator size="large" color="#3B82F6" /></View>
@@ -317,6 +344,20 @@ const styles = StyleSheet.create({
   backBtn: { padding: 4, marginRight: 16 },
   headerTitle: { flex: 1, fontSize: 20, fontWeight: 'bold', color: '#F8FAFC' },
   addBtn: { padding: 8, backgroundColor: '#1E293B', borderRadius: 10 },
+  permissionNotice: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#7C2D12', 
+    paddingHorizontal: 16, 
+    paddingVertical: 12, 
+    gap: 8 
+  },
+  permissionText: { 
+    color: '#FED7AA', 
+    fontSize: 13, 
+    fontWeight: '500',
+    flex: 1
+  },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   scroll: { padding: 16, paddingBottom: 40 },
   // Summary

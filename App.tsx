@@ -3,6 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { PermissionsProvider } from './src/context/PermissionsContext';
+import { NotificationsProvider } from './src/context/NotificationsContext';
 import { ActivityIndicator, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Toast from 'react-native-toast-message';
@@ -115,8 +117,12 @@ function NavigationWrapper() {
 export default function App() {
   return (
     <AuthProvider>
-      <NavigationWrapper />
-      <Toast />
+      <PermissionsProvider>
+        <NotificationsProvider>
+          <NavigationWrapper />
+          <Toast />
+        </NotificationsProvider>
+      </PermissionsProvider>
     </AuthProvider>
   );
 }

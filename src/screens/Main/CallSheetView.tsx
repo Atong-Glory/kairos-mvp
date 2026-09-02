@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, ActivityIndicator, Alert, Share
+  TouchableOpacity, ActivityIndicator, Alert, Share, Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -9,6 +9,7 @@ import { supabase } from '../../lib/supabase';
 import Toast from 'react-native-toast-message';
 import { ProjectsScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
+import { exportCallSheetPDF, shareCallSheetText, generateCallSheetWhatsAppText } from '../../utils/callSheetPDF';
 
 type CrewMember = {
   role_name: string;
@@ -21,10 +22,27 @@ export default function CallSheetView({ route, navigation }: ProjectsScreenProps
   const [crew, setCrew] = useState<CrewMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [shareMenuVisible, setShareMenuVisible] = useState(false);
+  const [projectTitle, setProjectTitle] = useState('Project');
 
   useEffect(() => {
     fetchCrew();
+    fetchProjectTitle();
   }, []);
+
+  const fetchProjectTitle = async () => {
+    try {
+      const { data } = await supabase
+        .from('projects')
+        .select('title')
+        .eq('id', projectId)
+        .single();
+      if (data) setProjectTitle(data.title);
+    } catch (err) {
+      console.error('Error fetching project title:', err);
+    }
+  };
 
   const fetchCrew = async () => {
     setLoading(true);
@@ -102,6 +120,44 @@ export default function CallSheetView({ route, navigation }: ProjectsScreenProps
     await Share.share({ message: text });
   };
 
+  const handleExportPDF = async () => {
+    setExporting(true);
+    try {
+      await exportCallSheetPDF({
+        projectTitle,
+        sceneNumber: scene.scene_number,
+        location: scene.location,
+        dayNight: scene.day_night,
+        scheduledDate: scene.scheduled_date,
+        description: scene.description,
+        crew,
+      });
+      Toast.show({ type: 'success', text1: 'PDF Exported', text2: 'Call sheet PDF is ready to share' });
+      setShareMenuVisible(false);
+    } catch (err: any) {
+      Toast.show({ type: 'error', text1: 'Export Failed', text2: err.message });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleShareWhatsApp = async () => {
+    try {
+      await shareCallSheetText({
+        projectTitle,
+        sceneNumber: scene.scene_number,
+        location: scene.location,
+        dayNight: scene.day_night,
+        scheduledDate: scene.scheduled_date,
+        description: scene.description,
+        crew,
+      });
+      setShareMenuVisible(false);
+    } catch (err: any) {
+      Toast.show({ type: 'error', text1: 'Share Failed', text2: err.message });
+    }
+  };
+
   // Group crew by department for rendering
   const grouped = crew.reduce((acc: Record<string, CrewMember[]>, m) => {
     if (!acc[m.department]) acc[m.department] = [];
@@ -117,10 +173,63 @@ export default function CallSheetView({ route, navigation }: ProjectsScreenProps
           <Icon name="arrow-back" size={24} color="#F8FAFC" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Call Sheet</Text>
-        <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
-          <Icon name="share-outline" size={22} color="#3B82F6" />
+        <TouchableOpacity style={styles.shareBtn} onPress={() => setShareMenuVisible(true)}>
+          <Icon name="share-social-outline" size={22} color="#3B82F6" />
         </TouchableOpacity>
       </View>
+
+      {/* Share Menu Modal */}
+      <Modal visible={shareMenuVisible} transparent animationType="fade" onRequestClose={() => setShareMenuVisible(false)}>
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1}
+          onPress={() => setShareMenuVisible(false)}
+        >
+          <View style={styles.shareMenu}>
+            <Text style={styles.shareMenuTitle}>Share Call Sheet</Text>
+            
+            <TouchableOpacity style={styles.shareOption} onPress={handleExportPDF} disabled={exporting}>
+              <View style={[styles.shareOptionIcon, { backgroundColor: '#1E3A5F' }]}>
+                <Icon name="document-outline" size={24} color="#3B82F6" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.shareOptionTitle}>📄 Export as PDF</Text>
+                <Text style={styles.shareOptionDesc}>Save and share professional PDF</Text>
+              </View>
+              {exporting && <ActivityIndicator size="small" color="#3B82F6" />}
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.shareOption} onPress={handleShareWhatsApp}>
+              <View style={[styles.shareOptionIcon, { backgroundColor: '#1B5E20' }]}>
+                <Icon name="logo-whatsapp" size={24} color="#25D366" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.shareOptionTitle}>💬 Share on WhatsApp</Text>
+                <Text style={styles.shareOptionDesc}>Send formatted text to crew</Text>
+              </View>
+              <Icon name="chevron-forward" size={20} color="#475569" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.shareOption} onPress={handleShare}>
+              <View style={[styles.shareOptionIcon, { backgroundColor: '#1E3A5F' }]}>
+                <Icon name="share-outline" size={24} color="#3B82F6" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.shareOptionTitle}>📤 Share as Text</Text>
+                <Text style={styles.shareOptionDesc}>Copy to clipboard or email</Text>
+              </View>
+              <Icon name="chevron-forward" size={20} color="#475569" />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.shareOptionCancel}
+              onPress={() => setShareMenuVisible(false)}
+            >
+              <Text style={styles.shareOptionCancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       <ScrollView contentContainerStyle={styles.content}>
         {/* Scene Overview Card */}
@@ -277,4 +386,65 @@ const styles = StyleSheet.create({
     borderRadius: 12, alignItems: 'center', justifyContent: 'center',
   },
   saveBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  // Share menu
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'flex-end',
+  },
+  shareMenu: {
+    backgroundColor: '#1E293B',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 32,
+    gap: 12,
+  },
+  shareMenuTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#F8FAFC',
+    marginBottom: 16,
+  },
+  shareOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0F172A',
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  shareOptionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shareOptionTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#F8FAFC',
+    marginBottom: 4,
+  },
+  shareOptionDesc: {
+    fontSize: 12,
+    color: '#94A3B8',
+  },
+  shareOptionCancel: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#334155',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  shareOptionCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#F8FAFC',
+  },
 });
