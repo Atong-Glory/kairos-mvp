@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as DocumentPicker from 'expo-document-picker';
 import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../context/AuthContext';
 import Pdf from 'react-native-pdf';
 import Toast from 'react-native-toast-message';
 import { ProjectsScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
+import { errorMessage } from '../../lib/validation';
+
+const MAX_SCRIPT_BYTES = 50 * 1024 * 1024;
 
 export default function ScriptViewer({ route, navigation }: ProjectsScreenProps<'ScriptViewer'>) {
   const { projectId, project } = route.params;
-  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -27,12 +28,18 @@ export default function ScriptViewer({ route, navigation }: ProjectsScreenProps<
       // We check if a script exists for this project in the bucket
       const filePath = `${projectId}/script.pdf`;
       const { data, error } = await supabase.storage.from('scripts').createSignedUrl(filePath, 3600); // 1 hour expiry
-      
+
       if (data && data.signedUrl) {
         setPdfUrl(data.signedUrl);
+      } else {
+        setPdfUrl(null);
+        // "Object not found" simply means no script has been uploaded yet.
+        if (error && !/not found/i.test(error.message)) {
+          Toast.show({ type: 'error', text1: 'Error', text2: error.message });
+        }
       }
     } catch (error) {
-      console.log('No script found or error fetching:', error);
+      console.error('Error fetching script:', error);
     } finally {
       setLoading(false);
     }
@@ -49,17 +56,22 @@ export default function ScriptViewer({ route, navigation }: ProjectsScreenProps<
         return;
       }
 
-      setUploading(true);
       const file = result.assets[0];
+      if (file.size && file.size > MAX_SCRIPT_BYTES) {
+        Toast.show({ type: 'error', text1: 'File Too Large', text2: 'Scripts must be under 50 MB.' });
+        return;
+      }
+
+      setUploading(true);
       const filePath = `${projectId}/script.pdf`;
 
-      // In React Native, fetch the URI to convert it to a Blob for Supabase upload
-      const response = await fetch(file.uri);
-      const blob = await response.blob();
+      // Blob uploads are unreliable in React Native; upload raw bytes instead.
+      const arrayBuffer = await fetch(file.uri).then(r => r.arrayBuffer());
+      if (arrayBuffer.byteLength === 0) throw new Error('Selected file is empty.');
 
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('scripts')
-        .upload(filePath, blob, {
+        .upload(filePath, arrayBuffer, {
           contentType: 'application/pdf',
           upsert: true, // Overwrite if it already exists (e.g. new version)
         });
@@ -68,17 +80,18 @@ export default function ScriptViewer({ route, navigation }: ProjectsScreenProps<
       
       // Update the script version in the project table
       if (project) {
-        await supabase
+        const { error: versionError } = await supabase
           .from('projects')
           .update({ script_version: project.script_version + 1 })
           .eq('id', projectId);
+        if (versionError) console.error('Failed to bump script version:', versionError.message);
       }
 
       Toast.show({ type: 'success', text1: 'Success', text2: 'Script uploaded successfully!' });
       checkExistingScript(); // Reload the PDF
-    } catch (error: any) {
+    } catch (error) {
       console.error('Upload Error:', error);
-      Toast.show({ type: 'error', text1: 'Upload Failed', text2: error.message || 'Could not upload the script.' });
+      Toast.show({ type: 'error', text1: 'Upload Failed', text2: errorMessage(error, 'Could not upload the script.') });
     } finally {
       setUploading(false);
     }
@@ -105,18 +118,9 @@ export default function ScriptViewer({ route, navigation }: ProjectsScreenProps<
         ) : pdfUrl ? (
           <Pdf
             source={{ uri: pdfUrl, cache: true }}
-            onLoadComplete={(numberOfPages, filePath) => {
-              console.log(`Number of pages: ${numberOfPages}`);
-            }}
-            onPageChanged={(page, numberOfPages) => {
-              console.log(`Current page: ${page}`);
-            }}
             onError={(error) => {
               console.error(error);
               Toast.show({ type: 'error', text1: 'PDF Error', text2: 'Failed to load the PDF. It may be corrupted or the URL expired.' });
-            }}
-            onPressLink={(uri) => {
-              console.log(`Link pressed: ${uri}`);
             }}
             style={styles.pdf}
             trustAllCerts={false}

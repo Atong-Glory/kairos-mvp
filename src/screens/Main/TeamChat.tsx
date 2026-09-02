@@ -16,6 +16,8 @@ import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { ProjectsScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
+import Toast from 'react-native-toast-message';
+import { errorMessage } from '../../lib/validation';
 
 type Message = {
   id: string;
@@ -23,11 +25,12 @@ type Message = {
   user_id: string;
   content: string;
   created_at: string;
+  users?: { full_name: string | null } | null;
 };
 
 export default function TeamChat({ route, navigation }: ProjectsScreenProps<'TeamChat'>) {
   const { projectId, project } = route.params;
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -50,7 +53,7 @@ export default function TeamChat({ route, navigation }: ProjectsScreenProps<'Tea
         },
         (payload) => {
           const newMsg = payload.new as Message;
-          setMessages((prev) => [newMsg, ...prev]);
+          setMessages((prev) => (prev.some(m => m.id === newMsg.id) ? prev : [newMsg, ...prev]));
         }
       )
       .subscribe();
@@ -64,14 +67,15 @@ export default function TeamChat({ route, navigation }: ProjectsScreenProps<'Tea
     try {
       const { data, error } = await supabase
         .from('messages')
-        .select('id, project_id, user_id, content, created_at')
+        .select('id, project_id, user_id, content, created_at, users(full_name)')
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setMessages(data || []);
+      setMessages((data as unknown as Message[]) || []);
     } catch (error) {
       console.error('Error fetching messages:', error);
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Could not load messages.' });
     } finally {
       setLoading(false);
     }
@@ -80,18 +84,23 @@ export default function TeamChat({ route, navigation }: ProjectsScreenProps<'Tea
   const sendMessage = async () => {
     if (!newMessage.trim() || !user) return;
 
+    const content = newMessage.trim();
     setSending(true);
+    setNewMessage('');
     try {
-      const { error } = await supabase.from('messages').insert({
-        project_id: projectId,
-        user_id: user.id,
-        content: newMessage.trim(),
-      });
+      const { data, error } = await supabase
+        .from('messages')
+        .insert({ project_id: projectId, user_id: user.id, content })
+        .select('id, project_id, user_id, content, created_at')
+        .single();
 
       if (error) throw error;
-      setNewMessage('');
+      // Realtime may not echo our own insert; show it immediately.
+      setMessages((prev) => (prev.some(m => m.id === data.id) ? prev : [{ ...data, users: { full_name: profile?.full_name ?? null } }, ...prev]));
     } catch (error) {
       console.error('Error sending message:', error);
+      setNewMessage(content);
+      Toast.show({ type: 'error', text1: 'Send Failed', text2: errorMessage(error) });
     } finally {
       setSending(false);
     }
@@ -113,11 +122,9 @@ export default function TeamChat({ route, navigation }: ProjectsScreenProps<'Tea
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
-  const getSenderName = (messageUserId: string) => {
-    if (messageUserId === user?.id) {
-      return user?.email?.split('@')[0] || 'You';
-    }
-    return 'Crew Member';
+  const getSenderName = (message: Message) => {
+    if (message.user_id === user?.id) return profile?.full_name || 'You';
+    return message.users?.full_name || 'Crew Member';
   };
 
   const isCurrentUser = (messageUserId: string) => messageUserId === user?.id;
@@ -144,7 +151,7 @@ export default function TeamChat({ route, navigation }: ProjectsScreenProps<'Tea
             </View>
           )}
           <View style={[styles.messageBubble, isOwn ? styles.ownBubble : styles.otherBubble]}>
-            {!isOwn && <Text style={styles.senderName}>{getSenderName(item.user_id)}</Text>}
+            {!isOwn && <Text style={styles.senderName}>{getSenderName(item)}</Text>}
             <Text style={[styles.messageText, isOwn ? styles.ownMessageText : styles.otherMessageText]}>
               {item.content}
             </Text>

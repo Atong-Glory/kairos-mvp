@@ -4,13 +4,18 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { ActivityIndicator, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Toast from 'react-native-toast-message';
 import { AuthStackParamList, ProjectsStackParamList } from './src/navigation/types';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 // Auth Screens
 import Login from './src/screens/Auth/Login';
 import SignUp from './src/screens/Auth/SignUp';
+import ForgotPassword from './src/screens/Auth/ForgotPassword';
+import ResetPassword from './src/screens/Auth/ResetPassword';
 
 // Main Screens
 import Dashboard from './src/screens/Main/Dashboard';
@@ -36,6 +41,7 @@ function AuthStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="SignUp" component={SignUp} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
     </Stack.Navigator>
   );
 }
@@ -95,7 +101,7 @@ function MainTabs() {
 }
 
 function NavigationWrapper() {
-  const { session, isLoading } = useAuth();
+  const { session, isLoading, isPasswordRecovery } = useAuth();
 
   if (isLoading) {
     return (
@@ -107,16 +113,21 @@ function NavigationWrapper() {
 
   return (
     <NavigationContainer>
-      {session && session.user ? <MainTabs /> : <AuthStack />}
+      {session && session.user ? (isPasswordRecovery ? <ResetPassword /> : <MainTabs />) : <AuthStack />}
     </NavigationContainer>
   );
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <NavigationWrapper />
-      <Toast />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <StatusBar style="light" />
+          <NavigationWrapper />
+          <Toast />
+        </AuthProvider>
+      </ErrorBoundary>
+    </SafeAreaProvider>
   );
 }

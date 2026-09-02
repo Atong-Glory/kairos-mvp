@@ -9,19 +9,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { Calendar } from 'react-native-calendars';
 import { supabase } from '../../lib/supabase';
 import Toast from 'react-native-toast-message';
-import { ProjectsScreenProps } from '../../navigation/types';
+import { ProjectsScreenProps, Scene } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
-
-type Scene = {
-  id: string;
-  scene_number: string;
-  location: string;
-  day_night: string;
-  description: string;
-  scheduled_date: string | null;
-  status: string;
-  characters: string[];
-};
 
 const STATUS_COLORS: Record<string, string> = {
   pending: '#F59E0B',
@@ -50,7 +39,8 @@ export default function SceneManager({ route, navigation }: ProjectsScreenProps<
       .select('*')
       .eq('project_id', projectId)
       .order('scene_number');
-    if (!error) setScenes(data || []);
+    if (error) Toast.show({ type: 'error', text1: 'Error', text2: error.message });
+    else setScenes(data || []);
     setLoading(false);
   };
 
@@ -93,7 +83,8 @@ export default function SceneManager({ route, navigation }: ProjectsScreenProps<
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete', style: 'destructive', onPress: async () => {
-          await supabase.from('scenes').delete().eq('id', scene.id);
+          const { error } = await supabase.from('scenes').delete().eq('id', scene.id);
+          if (error) Toast.show({ type: 'error', text1: 'Delete Failed', text2: error.message });
           fetchScenes();
         }
       }
@@ -121,8 +112,8 @@ export default function SceneManager({ route, navigation }: ProjectsScreenProps<
               <Icon name={item.day_night === 'DAY' ? 'sunny-outline' : 'moon-outline'} size={12} color="#F8FAFC" />
               <Text style={styles.dayNightText}>{item.day_night}</Text>
             </View>
-            <View style={[styles.statusBadge, { backgroundColor: `${STATUS_COLORS[item.status]}20` }]}>
-              <Text style={[styles.statusText, { color: STATUS_COLORS[item.status] }]}>{item.status.toUpperCase()}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: `${STATUS_COLORS[item.status] || '#64748B'}20` }]}>
+              <Text style={[styles.statusText, { color: STATUS_COLORS[item.status] || '#64748B' }]}>{item.status.toUpperCase()}</Text>
             </View>
           </View>
         </View>

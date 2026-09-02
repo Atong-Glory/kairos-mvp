@@ -10,6 +10,7 @@ import { supabase } from '../../lib/supabase';
 import Toast from 'react-native-toast-message';
 import { ProjectsScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
+import { parseAmount } from '../../lib/validation';
 
 type BudgetItem = {
   id: string;
@@ -65,7 +66,8 @@ export default function BudgetTracker({ route, navigation }: ProjectsScreenProps
       .select('*')
       .eq('project_id', projectId)
       .order('category');
-    if (!error) setItems(data || []);
+    if (error) Toast.show({ type: 'error', text1: 'Error', text2: error.message });
+    else setItems(data || []);
     setLoading(false);
   };
 
@@ -97,13 +99,17 @@ export default function BudgetTracker({ route, navigation }: ProjectsScreenProps
       Toast.show({ type: 'error', text1: 'Required', text2: 'Please fill in description and planned amount.' });
       return;
     }
+    if (!Number.isFinite(parseFloat(form.planned_amount)) || (form.actual_amount && !Number.isFinite(parseFloat(form.actual_amount)))) {
+      Toast.show({ type: 'error', text1: 'Invalid Amount', text2: 'Amounts must be numbers.' });
+      return;
+    }
     setSaving(true);
     const payload = {
       project_id: projectId,
       category: form.category,
       description: form.description.trim(),
-      planned_amount: parseFloat(form.planned_amount) || 0,
-      actual_amount: parseFloat(form.actual_amount) || 0,
+      planned_amount: parseAmount(form.planned_amount),
+      actual_amount: parseAmount(form.actual_amount),
     };
     let error;
     if (editItem) {
@@ -122,7 +128,8 @@ export default function BudgetTracker({ route, navigation }: ProjectsScreenProps
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete', style: 'destructive', onPress: async () => {
-          await supabase.from('budget_items').delete().eq('id', item.id);
+          const { error } = await supabase.from('budget_items').delete().eq('id', item.id);
+          if (error) Toast.show({ type: 'error', text1: 'Delete Failed', text2: error.message });
           fetchItems();
         }
       }
