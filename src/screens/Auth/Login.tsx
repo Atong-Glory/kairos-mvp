@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { AuthScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
+import { isValidEmail } from '../../lib/validation';
 
 export default function Login({ navigation }: AuthScreenProps<'Login'>) {
   const [email, setEmail] = useState('');
@@ -12,14 +13,19 @@ export default function Login({ navigation }: AuthScreenProps<'Login'>) {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail || !password) {
       Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter email and password' });
       return;
     }
-    
+    if (!isValidEmail(trimmedEmail)) {
+      Toast.show({ type: 'error', text1: 'Invalid Email', text2: 'Please enter a valid email address.' });
+      return;
+    }
+
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: trimmedEmail,
       password,
     });
     
@@ -44,7 +50,9 @@ export default function Login({ navigation }: AuthScreenProps<'Login'>) {
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
+            autoCorrect={false}
             keyboardType="email-address"
+            textContentType="emailAddress"
           />
         </View>
 
@@ -57,8 +65,14 @@ export default function Login({ navigation }: AuthScreenProps<'Login'>) {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            textContentType="password"
+            onSubmitEditing={handleLogin}
           />
         </View>
+
+        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotBtn}>
+          <Text style={styles.linkText}>Forgot password?</Text>
+        </TouchableOpacity>
 
         <AnimatedPressable style={styles.button} onPress={handleLogin} disabled={loading}>
           {loading ? (
@@ -129,6 +143,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  forgotBtn: {
+    alignSelf: 'flex-end',
+    marginTop: -8,
+    marginBottom: 8,
   },
   footer: {
     flexDirection: 'row',

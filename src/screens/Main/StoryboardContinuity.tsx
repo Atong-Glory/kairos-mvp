@@ -12,6 +12,10 @@ import { useAuth } from '../../context/AuthContext';
 import Toast from 'react-native-toast-message';
 import { ProjectsScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
+import { errorMessage } from '../../lib/validation';
+
+const BUCKET = 'continuity';
+const SIGNED_URL_TTL = 60 * 60; // 1 hour
 
 type ContinuityPhoto = {
   id: string;
@@ -49,7 +53,20 @@ export default function StoryboardContinuity({ route, navigation }: ProjectsScre
       .select('*')
       .eq('project_id', projectId)
       .order('taken_at', { ascending: false });
-    if (!error) setPhotos(data || []);
+    if (error) {
+      Toast.show({ type: 'error', text1: 'Error', text2: error.message });
+      setLoading(false);
+      return;
+    }
+    // photo_url holds a storage path; legacy rows may hold a full (expiring) signed URL.
+    const rows: ContinuityPhoto[] = data || [];
+    const paths = rows.filter(r => !r.photo_url.startsWith('http')).map(r => r.photo_url);
+    let signed: Record<string, string> = {};
+    if (paths.length > 0) {
+      const { data: urls } = await supabase.storage.from(BUCKET).createSignedUrls(paths, SIGNED_URL_TTL);
+      (urls || []).forEach(u => { if (u.path && u.signedUrl) signed[u.path] = u.signedUrl; });
+    }
+    setPhotos(rows.map(r => ({ ...r, photo_url: signed[r.photo_url] ?? r.photo_url })));
     setLoading(false);
   };
 
@@ -87,40 +104,30 @@ export default function StoryboardContinuity({ route, navigation }: ProjectsScre
     setUploading(true);
 
     try {
-      const fileName = `${projectId}/${Date.now()}.jpg`;
-      const response = await fetch(pendingUri);
-      const blob = await response.blob();
+      const filePath = `${projectId}/${Date.now()}.jpg`;
+      // Blob uploads are unreliable in React Native; upload raw bytes instead.
+      const arrayBuffer = await fetch(pendingUri).then(r => r.arrayBuffer());
+      if (arrayBuffer.byteLength === 0) throw new Error('Selected image is empty.');
 
       const { error: uploadError } = await supabase.storage
-        .from('scripts') // reuse the bucket or create a continuity bucket
-        .upload(`continuity/${fileName}`, blob, {
-          contentType: 'image/jpeg',
-          upsert: false,
-        });
+        .from(BUCKET)
+        .upload(filePath, arrayBuffer, { contentType: 'image/jpeg', upsert: false });
 
       if (uploadError) throw uploadError;
 
-      // Get signed URL
-      const { data: urlData } = await supabase.storage
-        .from('scripts')
-        .createSignedUrl(`continuity/${fileName}`, 60 * 60 * 24 * 365); // 1 year
-
-      if (!urlData?.signedUrl) throw new Error('Failed to get signed URL');
-
-      // Insert record
       const { error: insertError } = await supabase
         .from('continuity_photos')
         .insert([{
           project_id: projectId,
-          photo_url: urlData.signedUrl,
+          photo_url: filePath,
           annotation: annotation.trim(),
           user_id: user?.id,
         }]);
 
       if (insertError) throw insertError;
       fetchPhotos();
-    } catch (err: any) {
-      Toast.show({ type: 'error', text1: 'Upload Failed', text2: err.message });
+    } catch (err) {
+      Toast.show({ type: 'error', text1: 'Upload Failed', text2: errorMessage(err) });
     } finally {
       setUploading(false);
       setPendingUri(null);
@@ -132,7 +139,8 @@ export default function StoryboardContinuity({ route, navigation }: ProjectsScre
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete', style: 'destructive', onPress: async () => {
-          await supabase.from('continuity_photos').delete().eq('id', photo.id);
+          const { error } = await supabase.from('continuity_photos').delete().eq('id', photo.id);
+          if (error) Toast.show({ type: 'error', text1: 'Delete Failed', text2: error.message });
           fetchPhotos();
         }
       }

@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
-  ActivityIndicator, Alert, KeyboardAvoidingView, Platform
+  ActivityIndicator, KeyboardAvoidingView, Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { supabase } from '../../lib/supabase';
+import { supabase, supabaseNoSession, AUTH_REDIRECT_URL } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import Toast from 'react-native-toast-message';
 import { ProjectsScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
+import { isValidEmail, errorMessage } from '../../lib/validation';
+
+const PASSWORD_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+const randomPassword = () =>
+  Array.from({ length: 24 }, () => PASSWORD_CHARS[Math.floor(Math.random() * PASSWORD_CHARS.length)]).join('');
 
 export default function InviteCrew({ route, navigation }: ProjectsScreenProps<'InviteCrew'>) {
   const { tenantId } = useAuth();
@@ -18,47 +23,66 @@ export default function InviteCrew({ route, navigation }: ProjectsScreenProps<'I
   const [loading, setLoading] = useState(false);
 
   const handleInvite = async () => {
-    if (!email.trim() || !fullName.trim()) {
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedName = fullName.trim();
+    if (!trimmedEmail || !trimmedName) {
       Toast.show({ type: 'error', text1: 'Required', text2: 'Please fill in all fields.' });
+      return;
+    }
+    if (!isValidEmail(trimmedEmail)) {
+      Toast.show({ type: 'error', text1: 'Invalid Email', text2: 'Please enter a valid email address.' });
+      return;
+    }
+    if (!tenantId) {
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Your production house could not be determined. Please sign in again.' });
       return;
     }
 
     setLoading(true);
     try {
-      // Sign them up with a random temp password. They'll need to reset via Supabase email.
-      // This is the zero-budget approach: Supabase sends a magic link or password reset.
-      const tempPassword = Math.random().toString(36).slice(-10) + 'Kx1!';
-
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
-        password: tempPassword,
+      // Uses the session-less client so the inviter stays signed in. The invitee gets a
+      // confirmation email, then sets their own password via "Forgot password?".
+      const { data, error } = await supabaseNoSession.auth.signUp({
+        email: trimmedEmail,
+        password: randomPassword(),
         options: {
-          data: { full_name: fullName.trim() },
+          emailRedirectTo: AUTH_REDIRECT_URL,
+          data: { full_name: trimmedName, tenant_id: tenantId },
         },
       });
 
       if (error) throw error;
 
-      if (data.user) {
-        // Insert them into the users table under this tenant
-        const { error: profileError } = await supabase.from('users').insert([{
-          id: data.user.id,
-          tenant_id: tenantId,
-          full_name: fullName.trim(),
-        }]);
-
-        if (profileError) throw profileError;
+      // Supabase returns an obfuscated user with no identities when the email is already registered.
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        throw new Error('An account with this email already exists.');
       }
 
-      Toast.show({ 
-        type: 'success', 
-        text1: 'Crew Member Added!', 
-        text2: `${fullName} has been added to your production house.`
+      if (data.user) {
+        // The on_auth_user_created trigger creates the profile from the metadata above.
+        // Verify it landed in this tenant so a missing trigger surfaces immediately.
+        const { data: profile, error: profileError } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', data.user.id)
+          .maybeSingle();
+        if (profileError) throw profileError;
+        if (!profile) {
+          throw new Error(
+            'Account created but profile was not provisioned. Apply the latest Supabase migration (on_auth_user_created trigger).'
+          );
+        }
+      }
+
+      Toast.show({
+        type: 'success',
+        text1: 'Invitation Sent',
+        text2: `${trimmedName} will receive an email to confirm their account, then can set a password from the sign-in screen.`,
+        visibilityTime: 6000,
       });
       navigation.goBack();
-    } catch (err: any) {
-      console.error(err);
-      Toast.show({ type: 'error', text1: 'Error', text2: err.message || 'Failed to add crew member.' });
+    } catch (err) {
+      Toast.show({ type: 'error', text1: 'Invite Failed', text2: errorMessage(err, 'Failed to add crew member.') });
     } finally {
       setLoading(false);
     }
@@ -83,7 +107,7 @@ export default function InviteCrew({ route, navigation }: ProjectsScreenProps<'I
             <Icon name="person-add" size={40} color="#3B82F6" />
           </View>
           <Text style={styles.description}>
-            Add a crew member to your production house. They'll receive an email to confirm their account and set a password.
+            Add a crew member to your production house. They'll receive an email to confirm their account, then set a password via "Forgot password?" on the sign-in screen.
           </Text>
 
           <Text style={styles.label}>Full Name</Text>

@@ -4,18 +4,23 @@ import { useAuth } from '../../context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { ProjectsScreenProps } from '../../navigation/types';
+import Toast from 'react-native-toast-message';
+import { ProjectsScreenProps, Project } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
 
 export default function Dashboard({ navigation }: ProjectsScreenProps<'DashboardList'>) {
-  const { user, tenantId, signOut } = useAuth();
-  const [projects, setProjects] = useState<any[]>([]);
+  const { user, profile, tenantId, signOut } = useAuth();
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchProjects = async () => {
-    if (!tenantId) return;
-    
+    if (!tenantId) {
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('projects')
@@ -27,6 +32,7 @@ export default function Dashboard({ navigation }: ProjectsScreenProps<'Dashboard
       setProjects(data || []);
     } catch (error) {
       console.error('Error fetching projects:', error);
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Could not load projects. Pull to retry.' });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -35,11 +41,12 @@ export default function Dashboard({ navigation }: ProjectsScreenProps<'Dashboard
 
   useEffect(() => {
     fetchProjects();
+    if (!tenantId) return;
 
     // Subscribe to real-time changes
     const channel = supabase
-      .channel('public:projects')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects', filter: `tenant_id=eq.${tenantId}` }, payload => {
+      .channel(`projects-${tenantId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects', filter: `tenant_id=eq.${tenantId}` }, () => {
         fetchProjects();
       })
       .subscribe();
@@ -54,7 +61,7 @@ export default function Dashboard({ navigation }: ProjectsScreenProps<'Dashboard
     fetchProjects();
   };
 
-  const renderProjectCard = ({ item }: { item: any }) => (
+  const renderProjectCard = ({ item }: { item: Project }) => (
     <TouchableOpacity 
       style={styles.card} 
       onPress={() => navigation.navigate('ProjectDetails', { projectId: item.id, project: item })}
@@ -87,7 +94,7 @@ export default function Dashboard({ navigation }: ProjectsScreenProps<'Dashboard
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Hello, {user?.email?.split('@')[0]}</Text>
+          <Text style={styles.greeting}>Hello, {profile?.full_name || user?.email?.split('@')[0]}</Text>
           <Text style={styles.title}>Your Projects</Text>
         </View>
         <TouchableOpacity onPress={signOut} style={styles.signOutBtn}>
@@ -98,6 +105,12 @@ export default function Dashboard({ navigation }: ProjectsScreenProps<'Dashboard
       {loading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color="#3B82F6" />
+        </View>
+      ) : !tenantId ? (
+        <View style={styles.emptyContainer}>
+          <Icon name="alert-circle-outline" size={64} color="#334155" />
+          <Text style={styles.emptyText}>Account setup incomplete</Text>
+          <Text style={styles.emptySubText}>We couldn't load your production house. Check your connection, then sign out and back in.</Text>
         </View>
       ) : projects.length === 0 ? (
         <View style={styles.emptyContainer}>

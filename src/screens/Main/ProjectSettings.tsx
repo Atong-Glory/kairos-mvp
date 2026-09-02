@@ -4,8 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { ProjectsScreenProps } from '../../navigation/types';
+import { errorMessage } from '../../lib/validation';
 
-export default function ProjectSettings({ route, navigation }: any) {
+export default function ProjectSettings({ route, navigation }: ProjectsScreenProps<'ProjectSettings'>) {
   const { projectId, project } = route.params;
   const { tenantId } = useAuth();
 
@@ -42,6 +44,10 @@ export default function ProjectSettings({ route, navigation }: any) {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Clone', onPress: async () => {
+            if (!tenantId) {
+              Alert.alert('Error', 'Your production house could not be determined. Please sign in again.');
+              return;
+            }
             try {
               // 1. Create new project
               const { data: newProject, error: projError } = await supabase
@@ -58,10 +64,11 @@ export default function ProjectSettings({ route, navigation }: any) {
               if (projError) throw projError;
 
               // 2. Clone project_roles
-              const { data: roles } = await supabase
+              const { data: roles, error: rolesError } = await supabase
                 .from('project_roles')
                 .select('user_id, role_id')
                 .eq('project_id', projectId);
+              if (rolesError) throw rolesError;
 
               if (roles && roles.length > 0) {
                 const clonedRoles = roles.map(r => ({
@@ -69,14 +76,16 @@ export default function ProjectSettings({ route, navigation }: any) {
                   user_id: r.user_id,
                   role_id: r.role_id,
                 }));
-                await supabase.from('project_roles').insert(clonedRoles);
+                const { error } = await supabase.from('project_roles').insert(clonedRoles);
+                if (error) throw error;
               }
 
               // 3. Clone budget_items (planned amounts only, reset actuals)
-              const { data: budgetItems } = await supabase
+              const { data: budgetItems, error: budgetError } = await supabase
                 .from('budget_items')
                 .select('category, description, planned_amount')
                 .eq('project_id', projectId);
+              if (budgetError) throw budgetError;
 
               if (budgetItems && budgetItems.length > 0) {
                 const clonedBudget = budgetItems.map(b => ({
@@ -86,14 +95,16 @@ export default function ProjectSettings({ route, navigation }: any) {
                   planned_amount: b.planned_amount,
                   actual_amount: 0,
                 }));
-                await supabase.from('budget_items').insert(clonedBudget);
+                const { error } = await supabase.from('budget_items').insert(clonedBudget);
+                if (error) throw error;
               }
 
               // 4. Clone scenes (reset status and dates)
-              const { data: scenes } = await supabase
+              const { data: scenes, error: scenesError } = await supabase
                 .from('scenes')
                 .select('scene_number, location, day_night, characters, description')
                 .eq('project_id', projectId);
+              if (scenesError) throw scenesError;
 
               if (scenes && scenes.length > 0) {
                 const clonedScenes = scenes.map(s => ({
@@ -106,13 +117,14 @@ export default function ProjectSettings({ route, navigation }: any) {
                   scheduled_date: null,
                   status: 'pending',
                 }));
-                await supabase.from('scenes').insert(clonedScenes);
+                const { error } = await supabase.from('scenes').insert(clonedScenes);
+                if (error) throw error;
               }
 
               Alert.alert('Cloned!', `"${newProject.name}" has been created with all roles, budget items, and scenes.`);
               navigation.popToTop();
-            } catch (err: any) {
-              Alert.alert('Clone Failed', err.message);
+            } catch (err) {
+              Alert.alert('Clone Failed', errorMessage(err));
             }
           }
         },
