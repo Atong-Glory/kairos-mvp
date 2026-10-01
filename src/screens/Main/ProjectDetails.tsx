@@ -47,6 +47,7 @@ export default function ProjectDetails({ route, navigation }: ProjectsScreenProp
   };
 
   const features = [
+    { id: 'shoot-day', title: 'Live Shoot Day', icon: 'videocam-outline', color: '#EF4444' },
     { id: 'script', title: 'Script & Breakdown', icon: 'document-text-outline', color: '#8B5CF6' },
     { id: 'roles', title: 'Crew & Roles', icon: 'people-outline', color: '#EC4899' },
     { id: 'schedule', title: 'Scheduling', icon: 'calendar-outline', color: '#14B8A6' },
@@ -103,7 +104,9 @@ export default function ProjectDetails({ route, navigation }: ProjectsScreenProp
               style={styles.gridItem}
               scaleValue={0.97}
               onPress={() => {
-                if (feature.id === 'script') {
+                if (feature.id === 'shoot-day') {
+                  navigation.navigate('ShootDayBoard', { projectId, project });
+                } else if (feature.id === 'script') {
                   navigation.navigate('ScriptViewer', { projectId, project });
                 } else if (feature.id === 'roles') {
                   navigation.navigate('RoleManagement', { projectId, project });

@@ -13,6 +13,7 @@ export type ProjectsStackParamList = {
   RoleManagement: { projectId: string; project?: any };
   InviteCrew: { projectId: string; project?: any };
   SceneManager: { projectId: string; project?: any };
+  ShootDayBoard: { projectId: string; project?: any };
   CallSheetView: { projectId: string; sceneId: string; scene?: any };
   BudgetTracker: { projectId: string; project?: any };
   StoryboardContinuity: { projectId: string; project?: any };

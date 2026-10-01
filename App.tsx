@@ -22,6 +22,7 @@ import ScriptViewer from './src/screens/Main/ScriptViewer';
 import RoleManagement from './src/screens/Main/RoleManagement';
 import InviteCrew from './src/screens/Main/InviteCrew';
 import SceneManager from './src/screens/Main/SceneManager';
+import ShootDayBoard from './src/screens/Main/ShootDayBoard';
 import CallSheetView from './src/screens/Main/CallSheetView';
 import BudgetTracker from './src/screens/Main/BudgetTracker';
 import StoryboardContinuity from './src/screens/Main/StoryboardContinuity';
@@ -57,6 +58,7 @@ function ProjectsStackNavigator() {
       <ProjectsStack.Screen name="RoleManagement" component={RoleManagement} />
       <ProjectsStack.Screen name="InviteCrew" component={InviteCrew} />
       <ProjectsStack.Screen name="SceneManager" component={SceneManager} />
+      <ProjectsStack.Screen name="ShootDayBoard" component={ShootDayBoard} />
       <ProjectsStack.Screen name="CallSheetView" component={CallSheetView} />
       <ProjectsStack.Screen name="BudgetTracker" component={BudgetTracker} />
       <ProjectsStack.Screen name="StoryboardContinuity" component={StoryboardContinuity} />
