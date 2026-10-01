@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useTheme } from '../context/ThemeContext';
 
 /**
  * Component that shows an offline indicator banner when device is not connected
  * Place this at the top of your app or screen
  */
 export function OfflineIndicator() {
+  const { theme } = useTheme();
   const [isOnline, setIsOnline] = useState(true);
   const [showBanner, setShowBanner] = useState(false);
   const slideAnim = React.useRef(new Animated.Value(0)).current;
@@ -47,10 +49,10 @@ export function OfflineIndicator() {
   });
 
   return (
-    <Animated.View style={[styles.banner, { height }]}>
+    <Animated.View style={[styles.banner, { height, backgroundColor: theme.colors.surfaceElevated, borderBottomColor: theme.colors.warning }]}>
       <View style={styles.content}>
-        <Icon name="cloud-offline" size={18} color="#FCA5A5" />
-        <Text style={styles.text}>No internet connection - using cached data</Text>
+        <Icon name="cloud-offline" size={18} color={theme.colors.warning} />
+        <Text style={[styles.text, { color: theme.colors.text }]}>No internet connection - using cached data</Text>
       </View>
     </Animated.View>
   );
@@ -59,9 +61,7 @@ export function OfflineIndicator() {
 const styles = StyleSheet.create({
   banner: {
     overflow: 'hidden',
-    backgroundColor: '#7C2D12',
     borderBottomWidth: 1,
-    borderBottomColor: '#92400E',
   },
   content: {
     flex: 1,
@@ -74,7 +74,19 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#FED7AA',
+  },
+  cacheIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 6,
+    marginBottom: 12,
+  },
+  cacheText: {
+    fontSize: 12,
+    fontWeight: '500',
   },
 });
 
@@ -101,30 +113,13 @@ export function useOnline() {
  * Component to show when data is from cache
  */
 export function CacheIndicator({ visible = true }: { visible?: boolean }) {
+  const { theme } = useTheme();
   if (!visible) return null;
 
   return (
-    <View style={styles.cacheIndicator}>
-      <Icon name="server" size={14} color="#94A3B8" />
-      <Text style={styles.cacheText}>Data from cache</Text>
+    <View style={[styles.cacheIndicator, { backgroundColor: theme.colors.surfaceSubtle }]}>
+      <Icon name="server" size={14} color={theme.colors.textSecondary} />
+      <Text style={[styles.cacheText, { color: theme.colors.textSecondary }]}>Data from cache</Text>
     </View>
   );
 }
-
-StyleSheet.create({
-  cacheIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#1E293B',
-    borderRadius: 8,
-    gap: 6,
-    marginBottom: 12,
-  },
-  cacheText: {
-    fontSize: 12,
-    color: '#94A3B8',
-    fontWeight: '500',
-  },
-});

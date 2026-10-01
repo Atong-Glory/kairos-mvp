@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import {
   View, Text, StyleSheet, TouchableOpacity, SectionList,
   ActivityIndicator, Alert, TextInput, Modal, ScrollView
@@ -31,6 +32,7 @@ type TenantUser = {
 };
 
 export default function RoleManagement({ route, navigation }: ProjectsScreenProps<'RoleManagement'>) {
+  const themedStyles = usePaletteStyles(styles);
   const { projectId, project } = route.params;
   const { tenantId } = useAuth();
 
@@ -148,18 +150,18 @@ export default function RoleManagement({ route, navigation }: ProjectsScreenProp
     const assignedUser = getAssignedUser(item.id);
     return (
       <TouchableOpacity
-        style={[styles.roleRow, assigned && styles.roleRowAssigned]}
+        style={[themedStyles.roleRow, assigned && themedStyles.roleRowAssigned]}
         onPress={() => handleRolePress(item)}
         onLongPress={() => assigned && handleUnassign(item.id)}
         activeOpacity={0.75}
       >
-        <View style={styles.roleInfo}>
-          <Text style={styles.roleName}>{item.name}</Text>
+        <View style={themedStyles.roleInfo}>
+          <Text style={themedStyles.roleName}>{item.name}</Text>
           {assignedUser && (
-            <Text style={styles.assignedName}>{assignedUser}</Text>
+            <Text style={themedStyles.assignedName}>{assignedUser}</Text>
           )}
         </View>
-        <View style={[styles.roleStatus, assigned ? styles.statusFilled : styles.statusEmpty]}>
+        <View style={[themedStyles.roleStatus, assigned ? themedStyles.statusFilled : themedStyles.statusEmpty]}>
           <Icon
             name={assigned ? 'person-circle' : 'add-circle-outline'}
             size={22}
@@ -171,30 +173,30 @@ export default function RoleManagement({ route, navigation }: ProjectsScreenProp
   };
 
   const renderSectionHeader = ({ section: { title } }: any) => (
-    <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+    <View style={themedStyles.sectionHeader}>
+      <Text style={themedStyles.sectionTitle}>{title}</Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+    <SafeAreaView style={themedStyles.container}>
+      <View style={themedStyles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={themedStyles.backBtn}>
           <Icon name="arrow-back" size={24} color="#F8FAFC" />
         </TouchableOpacity>
         <View>
-          <Text style={styles.headerTitle}>Crew & Roles</Text>
-          <Text style={styles.headerSub}>{projectRoles.length} assigned</Text>
+          <Text style={themedStyles.headerTitle}>Crew & Roles</Text>
+          <Text style={themedStyles.headerSub}>{projectRoles.length} assigned</Text>
         </View>
-        <AnimatedPressable style={styles.inviteBtn} onPress={() => navigation.navigate('InviteCrew', { projectId, project })}>
+        <AnimatedPressable style={themedStyles.inviteBtn} onPress={() => navigation.navigate('InviteCrew', { projectId, project })}>
           <Icon name="person-add-outline" size={22} color="#3B82F6" />
         </AnimatedPressable>
       </View>
 
-      <Text style={styles.hint}>Tap to assign. Long-press to unassign.</Text>
+      <Text style={themedStyles.hint}>Tap to assign. Long-press to unassign.</Text>
 
       {loading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color="#3B82F6" /></View>
+        <View style={themedStyles.center}><ActivityIndicator size="large" color="#3B82F6" /></View>
       ) : (
         <SectionList
           sections={masterRoles}
@@ -213,34 +215,34 @@ export default function RoleManagement({ route, navigation }: ProjectsScreenProp
         animationType="slide"
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHandle} />
-            <Text style={styles.modalTitle}>Assign {selectedRole?.name}</Text>
-            <Text style={styles.modalSub}>Select a crew member from your production house</Text>
+        <View style={themedStyles.modalOverlay}>
+          <View style={themedStyles.modalSheet}>
+            <View style={themedStyles.modalHandle} />
+            <Text style={themedStyles.modalTitle}>Assign {selectedRole?.name}</Text>
+            <Text style={themedStyles.modalSub}>Select a crew member from your production house</Text>
             <ScrollView style={{ marginTop: 8 }}>
               {tenantUsers.length === 0 ? (
-                <Text style={styles.noUsers}>
+                <Text style={themedStyles.noUsers}>
                   No other users in your tenant yet. Invite crew members first.
                 </Text>
               ) : (
                 tenantUsers.map(u => (
                   <TouchableOpacity
                     key={u.id}
-                    style={styles.userRow}
+                    style={themedStyles.userRow}
                     onPress={() => handleAssign(u.id)}
                   >
-                    <View style={styles.avatar}>
-                      <Text style={styles.avatarText}>{u.full_name?.[0]?.toUpperCase() || '?'}</Text>
+                    <View style={themedStyles.avatar}>
+                      <Text style={themedStyles.avatarText}>{u.full_name?.[0]?.toUpperCase() || '?'}</Text>
                     </View>
-                    <Text style={styles.userName}>{u.full_name}</Text>
+                    <Text style={themedStyles.userName}>{u.full_name}</Text>
                     <Icon name="chevron-forward" size={18} color="#64748B" />
                   </TouchableOpacity>
                 ))
               )}
             </ScrollView>
-            <TouchableOpacity style={styles.cancelBtn} onPress={() => setModalVisible(false)}>
-              <Text style={styles.cancelText}>Cancel</Text>
+            <TouchableOpacity style={themedStyles.cancelBtn} onPress={() => setModalVisible(false)}>
+              <Text style={themedStyles.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>

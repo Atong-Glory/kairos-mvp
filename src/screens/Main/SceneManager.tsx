@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import {
   View, Text, StyleSheet, TouchableOpacity, FlatList,
   ActivityIndicator, Alert, Modal, TextInput,
@@ -31,6 +32,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function SceneManager({ route, navigation }: ProjectsScreenProps<'SceneManager'>) {
+  const themedStyles = usePaletteStyles(styles);
   const { projectId, project } = route.params;
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,51 +111,51 @@ export default function SceneManager({ route, navigation }: ProjectsScreenProps<
   }, {});
 
   const renderScene = ({ item }: { item: Scene }) => (
-    <View style={styles.card}>
-      <View style={styles.cardTop}>
-        <View style={styles.sceneNumBadge}>
-          <Text style={styles.sceneNum}>{item.scene_number}</Text>
+    <View style={themedStyles.card}>
+      <View style={themedStyles.cardTop}>
+        <View style={themedStyles.sceneNumBadge}>
+          <Text style={themedStyles.sceneNum}>{item.scene_number}</Text>
         </View>
         <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={styles.locationText}>{item.location}</Text>
-          <View style={styles.metaRow}>
-            <View style={styles.dayNightBadge}>
+          <Text style={themedStyles.locationText}>{item.location}</Text>
+          <View style={themedStyles.metaRow}>
+            <View style={themedStyles.dayNightBadge}>
               <Icon name={item.day_night === 'DAY' ? 'sunny-outline' : 'moon-outline'} size={12} color="#F8FAFC" />
-              <Text style={styles.dayNightText}>{item.day_night}</Text>
+              <Text style={themedStyles.dayNightText}>{item.day_night}</Text>
             </View>
-            <View style={[styles.statusBadge, { backgroundColor: `${STATUS_COLORS[item.status]}20` }]}>
-              <Text style={[styles.statusText, { color: STATUS_COLORS[item.status] }]}>{item.status.toUpperCase()}</Text>
+            <View style={[themedStyles.statusBadge, { backgroundColor: `${STATUS_COLORS[item.status]}20` }]}>
+              <Text style={[themedStyles.statusText, { color: STATUS_COLORS[item.status] }]}>{item.status.toUpperCase()}</Text>
             </View>
           </View>
         </View>
-        <TouchableOpacity onPress={() => handleDeleteScene(item)} style={styles.deleteBtn}>
+        <TouchableOpacity onPress={() => handleDeleteScene(item)} style={themedStyles.deleteBtn}>
           <Icon name="trash-outline" size={18} color="#EF4444" />
         </TouchableOpacity>
       </View>
 
-      {item.description ? <Text style={styles.descText} numberOfLines={2}>{item.description}</Text> : null}
+      {item.description ? <Text style={themedStyles.descText} numberOfLines={2}>{item.description}</Text> : null}
       {item.characters?.length > 0 && (
-        <Text style={styles.charText}>Characters: {item.characters.join(', ')}</Text>
+        <Text style={themedStyles.charText}>Characters: {item.characters.join(', ')}</Text>
       )}
 
-      <View style={styles.cardFooter}>
-        <Text style={styles.dateText}>
+      <View style={themedStyles.cardFooter}>
+        <Text style={themedStyles.dateText}>
           {item.scheduled_date ? `📅 ${item.scheduled_date}` : 'Not scheduled'}
         </Text>
-        <View style={styles.actions}>
+        <View style={themedStyles.actions}>
           <TouchableOpacity
-            style={styles.actionBtn}
+            style={themedStyles.actionBtn}
             onPress={() => setScheduleModal({ visible: true, scene: item })}
           >
             <Icon name="calendar-outline" size={16} color="#3B82F6" />
-            <Text style={styles.actionBtnText}>Schedule</Text>
+            <Text style={themedStyles.actionBtnText}>Schedule</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.actionBtn, { marginLeft: 8 }]}
+            style={[themedStyles.actionBtn, { marginLeft: 8 }]}
             onPress={() => navigation.navigate('CallSheetView', { projectId, sceneId: item.id, scene: item })}
           >
             <Icon name="document-outline" size={16} color="#10B981" />
-            <Text style={[styles.actionBtnText, { color: '#10B981' }]}>Call Sheet</Text>
+            <Text style={[themedStyles.actionBtnText, { color: '#10B981' }]}>Call Sheet</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -161,80 +163,80 @@ export default function SceneManager({ route, navigation }: ProjectsScreenProps<
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+    <SafeAreaView style={themedStyles.container}>
+      <View style={themedStyles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={themedStyles.backBtn}>
           <Icon name="arrow-back" size={24} color="#F8FAFC" />
         </TouchableOpacity>
         <View>
-          <Text style={styles.headerTitle}>Scenes</Text>
-          <Text style={styles.headerSub}>{scenes.length} scenes</Text>
+          <Text style={themedStyles.headerTitle}>Scenes</Text>
+          <Text style={themedStyles.headerSub}>{scenes.length} scenes</Text>
         </View>
-        <TouchableOpacity style={styles.addBtn} onPress={() => setAddModalVisible(true)}>
+        <TouchableOpacity style={themedStyles.addBtn} onPress={() => setAddModalVisible(true)}>
           <Icon name="add" size={24} color="#3B82F6" />
         </TouchableOpacity>
       </View>
 
       {loading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color="#3B82F6" /></View>
+        <View style={themedStyles.center}><ActivityIndicator size="large" color="#3B82F6" /></View>
       ) : scenes.length === 0 ? (
-        <View style={styles.empty}>
+        <View style={themedStyles.empty}>
           <Icon name="film-outline" size={72} color="#334155" />
-          <Text style={styles.emptyTitle}>No Scenes Yet</Text>
-          <Text style={styles.emptySub}>Tap the + button to add your first scene breakdown.</Text>
+          <Text style={themedStyles.emptyTitle}>No Scenes Yet</Text>
+          <Text style={themedStyles.emptySub}>Tap the + button to add your first scene breakdown.</Text>
         </View>
       ) : (
         <FlatList
           data={scenes}
           keyExtractor={item => item.id}
           renderItem={renderScene}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={themedStyles.list}
         />
       )}
 
       {/* Add Scene Modal */}
       <Modal visible={addModalVisible} transparent animationType="slide" onRequestClose={() => setAddModalVisible(false)}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalSheet}>
-              <View style={styles.modalHandle} />
-              <Text style={styles.modalTitle}>Add Scene</Text>
+          <View style={themedStyles.modalOverlay}>
+            <View style={themedStyles.modalSheet}>
+              <View style={themedStyles.modalHandle} />
+              <Text style={themedStyles.modalTitle}>Add Scene</Text>
 
               <ScrollView showsVerticalScrollIndicator={false}>
-                <Text style={styles.inputLabel}>Scene Number *</Text>
-                <TextInput style={styles.input} placeholder="e.g. 1A" placeholderTextColor="#64748B"
+                <Text style={themedStyles.inputLabel}>Scene Number *</Text>
+                <TextInput style={themedStyles.input} placeholder="e.g. 1A" placeholderTextColor="#64748B"
                   value={form.scene_number} onChangeText={v => setForm(f => ({ ...f, scene_number: v }))} />
 
-                <Text style={styles.inputLabel}>Location *</Text>
-                <TextInput style={styles.input} placeholder="e.g. INT. OFFICE - DAY" placeholderTextColor="#64748B"
+                <Text style={themedStyles.inputLabel}>Location *</Text>
+                <TextInput style={themedStyles.input} placeholder="e.g. INT. OFFICE - DAY" placeholderTextColor="#64748B"
                   value={form.location} onChangeText={v => setForm(f => ({ ...f, location: v }))} />
 
-                <Text style={styles.inputLabel}>Day / Night</Text>
-                <View style={styles.toggleRow}>
+                <Text style={themedStyles.inputLabel}>Day / Night</Text>
+                <View style={themedStyles.toggleRow}>
                   {['DAY', 'NIGHT', 'DUSK', 'DAWN'].map(dn => (
                     <TouchableOpacity key={dn} onPress={() => setForm(f => ({ ...f, day_night: dn }))}
-                      style={[styles.toggle, form.day_night === dn && styles.toggleActive]}>
-                      <Text style={[styles.toggleText, form.day_night === dn && styles.toggleTextActive]}>{dn}</Text>
+                      style={[themedStyles.toggle, form.day_night === dn && themedStyles.toggleActive]}>
+                      <Text style={[themedStyles.toggleText, form.day_night === dn && themedStyles.toggleTextActive]}>{dn}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
 
-                <Text style={styles.inputLabel}>Characters (comma-separated)</Text>
-                <TextInput style={styles.input} placeholder="e.g. JOHN, SARAH" placeholderTextColor="#64748B"
+                <Text style={themedStyles.inputLabel}>Characters (comma-separated)</Text>
+                <TextInput style={themedStyles.input} placeholder="e.g. JOHN, SARAH" placeholderTextColor="#64748B"
                   value={form.characters} onChangeText={v => setForm(f => ({ ...f, characters: v }))} />
 
-                <Text style={styles.inputLabel}>Description</Text>
-                <TextInput style={[styles.input, styles.textArea]} placeholder="Brief scene description..."
+                <Text style={themedStyles.inputLabel}>Description</Text>
+                <TextInput style={[themedStyles.input, themedStyles.textArea]} placeholder="Brief scene description..."
                   placeholderTextColor="#64748B" multiline numberOfLines={3}
                   value={form.description} onChangeText={v => setForm(f => ({ ...f, description: v }))} />
               </ScrollView>
 
-              <View style={styles.modalActions}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => setAddModalVisible(false)}>
-                  <Text style={styles.cancelText}>Cancel</Text>
+              <View style={themedStyles.modalActions}>
+                <TouchableOpacity style={themedStyles.cancelBtn} onPress={() => setAddModalVisible(false)}>
+                  <Text style={themedStyles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
-                <AnimatedPressable style={styles.saveBtn} onPress={handleAddScene} disabled={saving}>
-                  {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Add Scene</Text>}
+                <AnimatedPressable style={themedStyles.saveBtn} onPress={handleAddScene} disabled={saving}>
+                  {saving ? <ActivityIndicator color="#fff" /> : <Text style={themedStyles.saveText}>Add Scene</Text>}
                 </AnimatedPressable>
               </View>
             </View>
@@ -245,10 +247,10 @@ export default function SceneManager({ route, navigation }: ProjectsScreenProps<
       {/* Schedule Date Modal */}
       <Modal visible={scheduleModal.visible} transparent animationType="slide"
         onRequestClose={() => setScheduleModal({ visible: false, scene: null })}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHandle} />
-            <Text style={styles.modalTitle}>Schedule Scene {scheduleModal.scene?.scene_number}</Text>
+        <View style={themedStyles.modalOverlay}>
+          <View style={themedStyles.modalSheet}>
+            <View style={themedStyles.modalHandle} />
+            <Text style={themedStyles.modalTitle}>Schedule Scene {scheduleModal.scene?.scene_number}</Text>
             <Calendar
               onDayPress={handleScheduleDate}
               markedDates={markedDates}
@@ -265,8 +267,8 @@ export default function SceneManager({ route, navigation }: ProjectsScreenProps<
                 monthTextColor: '#F8FAFC',
               }}
             />
-            <TouchableOpacity style={styles.cancelBtn} onPress={() => setScheduleModal({ visible: false, scene: null })}>
-              <Text style={styles.cancelText}>Cancel</Text>
+            <TouchableOpacity style={themedStyles.cancelBtn} onPress={() => setScheduleModal({ visible: false, scene: null })}>
+              <Text style={themedStyles.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import {
   View, Text, StyleSheet, ScrollView,
   TouchableOpacity, ActivityIndicator, Alert, Share, Modal
@@ -18,6 +19,7 @@ type CrewMember = {
 };
 
 export default function CallSheetView({ route, navigation }: ProjectsScreenProps<'CallSheetView'>) {
+  const themedStyles = usePaletteStyles(styles);
   const { projectId, scene } = route.params;
   const [crew, setCrew] = useState<CrewMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -166,90 +168,90 @@ export default function CallSheetView({ route, navigation }: ProjectsScreenProps
   }, {});
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={themedStyles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+      <View style={themedStyles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={themedStyles.backBtn}>
           <Icon name="arrow-back" size={24} color="#F8FAFC" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Call Sheet</Text>
-        <TouchableOpacity style={styles.shareBtn} onPress={() => setShareMenuVisible(true)}>
+        <Text style={themedStyles.headerTitle}>Call Sheet</Text>
+        <TouchableOpacity style={themedStyles.shareBtn} onPress={() => setShareMenuVisible(true)}>
           <Icon name="share-social-outline" size={22} color="#3B82F6" />
         </TouchableOpacity>
       </View>
 
       {/* Share Menu Modal */}
       <Modal visible={shareMenuVisible} transparent animationType="fade" onRequestClose={() => setShareMenuVisible(false)}>
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
+        <TouchableOpacity
+          style={themedStyles.modalOverlay}
           activeOpacity={1}
           onPress={() => setShareMenuVisible(false)}
         >
-          <View style={styles.shareMenu}>
-            <Text style={styles.shareMenuTitle}>Share Call Sheet</Text>
-            
-            <TouchableOpacity style={styles.shareOption} onPress={handleExportPDF} disabled={exporting}>
-              <View style={[styles.shareOptionIcon, { backgroundColor: '#1E3A5F' }]}>
+          <View style={themedStyles.shareMenu}>
+            <Text style={themedStyles.shareMenuTitle}>Share Call Sheet</Text>
+
+            <TouchableOpacity style={themedStyles.shareOption} onPress={handleExportPDF} disabled={exporting}>
+              <View style={[themedStyles.shareOptionIcon, { backgroundColor: '#1E3A5F' }]}>
                 <Icon name="document-outline" size={24} color="#3B82F6" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.shareOptionTitle}>📄 Export as PDF</Text>
-                <Text style={styles.shareOptionDesc}>Save and share professional PDF</Text>
+                <Text style={themedStyles.shareOptionTitle}>📄 Export as PDF</Text>
+                <Text style={themedStyles.shareOptionDesc}>Save and share professional PDF</Text>
               </View>
               {exporting && <ActivityIndicator size="small" color="#3B82F6" />}
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.shareOption} onPress={handleShareWhatsApp}>
-              <View style={[styles.shareOptionIcon, { backgroundColor: '#1B5E20' }]}>
+            <TouchableOpacity style={themedStyles.shareOption} onPress={handleShareWhatsApp}>
+              <View style={[themedStyles.shareOptionIcon, { backgroundColor: '#1B5E20' }]}>
                 <Icon name="logo-whatsapp" size={24} color="#25D366" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.shareOptionTitle}>💬 Share on WhatsApp</Text>
-                <Text style={styles.shareOptionDesc}>Send formatted text to crew</Text>
+                <Text style={themedStyles.shareOptionTitle}>💬 Share on WhatsApp</Text>
+                <Text style={themedStyles.shareOptionDesc}>Send formatted text to crew</Text>
               </View>
               <Icon name="chevron-forward" size={20} color="#475569" />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.shareOption} onPress={handleShare}>
-              <View style={[styles.shareOptionIcon, { backgroundColor: '#1E3A5F' }]}>
+            <TouchableOpacity style={themedStyles.shareOption} onPress={handleShare}>
+              <View style={[themedStyles.shareOptionIcon, { backgroundColor: '#1E3A5F' }]}>
                 <Icon name="share-outline" size={24} color="#3B82F6" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.shareOptionTitle}>📤 Share as Text</Text>
-                <Text style={styles.shareOptionDesc}>Copy to clipboard or email</Text>
+                <Text style={themedStyles.shareOptionTitle}>📤 Share as Text</Text>
+                <Text style={themedStyles.shareOptionDesc}>Copy to clipboard or email</Text>
               </View>
               <Icon name="chevron-forward" size={20} color="#475569" />
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.shareOptionCancel}
+            <TouchableOpacity
+              style={themedStyles.shareOptionCancel}
               onPress={() => setShareMenuVisible(false)}
             >
-              <Text style={styles.shareOptionCancelText}>Cancel</Text>
+              <Text style={themedStyles.shareOptionCancelText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
       </Modal>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={themedStyles.content}>
         {/* Scene Overview Card */}
-        <View style={styles.sceneCard}>
-          <View style={styles.sceneCardHeader}>
-            <View style={styles.sceneBadge}>
-              <Text style={styles.sceneBadgeText}>SCENE</Text>
-              <Text style={styles.sceneNumber}>{scene.scene_number}</Text>
+        <View style={themedStyles.sceneCard}>
+          <View style={themedStyles.sceneCardHeader}>
+            <View style={themedStyles.sceneBadge}>
+              <Text style={themedStyles.sceneBadgeText}>SCENE</Text>
+              <Text style={themedStyles.sceneNumber}>{scene.scene_number}</Text>
             </View>
             <View style={{ flex: 1, marginLeft: 16 }}>
-              <Text style={styles.sceneLocation}>{scene.location}</Text>
-              <View style={styles.sceneMetaRow}>
-                <View style={styles.chip}>
+              <Text style={themedStyles.sceneLocation}>{scene.location}</Text>
+              <View style={themedStyles.sceneMetaRow}>
+                <View style={themedStyles.chip}>
                   <Icon name={scene.day_night === 'DAY' ? 'sunny-outline' : 'moon-outline'} size={12} color="#F8FAFC" />
-                  <Text style={styles.chipText}>{scene.day_night}</Text>
+                  <Text style={themedStyles.chipText}>{scene.day_night}</Text>
                 </View>
                 {scene.scheduled_date && (
-                  <View style={styles.chip}>
+                  <View style={themedStyles.chip}>
                     <Icon name="calendar-outline" size={12} color="#F8FAFC" />
-                    <Text style={styles.chipText}>{scene.scheduled_date}</Text>
+                    <Text style={themedStyles.chipText}>{scene.scheduled_date}</Text>
                   </View>
                 )}
               </View>
@@ -257,42 +259,42 @@ export default function CallSheetView({ route, navigation }: ProjectsScreenProps
           </View>
 
           {scene.description ? (
-            <Text style={styles.sceneDesc}>{scene.description}</Text>
+            <Text style={themedStyles.sceneDesc}>{scene.description}</Text>
           ) : null}
 
           {scene.characters?.length > 0 && (
-            <View style={styles.charRow}>
+            <View style={themedStyles.charRow}>
               <Icon name="people-outline" size={14} color="#94A3B8" />
-              <Text style={styles.charText}>{scene.characters.join('  ·  ')}</Text>
+              <Text style={themedStyles.charText}>{scene.characters.join('  ·  ')}</Text>
             </View>
           )}
         </View>
 
         {/* Crew Breakdown */}
-        <Text style={styles.sectionTitle}>Crew on Call</Text>
+        <Text style={themedStyles.sectionTitle}>Crew on Call</Text>
 
         {loading ? (
-          <View style={styles.center}>
+          <View style={themedStyles.center}>
             <ActivityIndicator size="large" color="#3B82F6" />
           </View>
         ) : crew.length === 0 ? (
-          <View style={styles.emptyCard}>
+          <View style={themedStyles.emptyCard}>
             <Icon name="people-outline" size={40} color="#475569" />
-            <Text style={styles.emptyText}>No crew assigned yet.</Text>
-            <Text style={styles.emptySub}>Go to Crew & Roles to assign crew members to this project.</Text>
+            <Text style={themedStyles.emptyText}>No crew assigned yet.</Text>
+            <Text style={themedStyles.emptySub}>Go to Crew & Roles to assign crew members to this project.</Text>
           </View>
         ) : (
           Object.keys(grouped).map(dept => (
-            <View key={dept} style={styles.deptSection}>
-              <Text style={styles.deptTitle}>{dept}</Text>
+            <View key={dept} style={themedStyles.deptSection}>
+              <Text style={themedStyles.deptTitle}>{dept}</Text>
               {grouped[dept].map((m, i) => (
-                <View key={i} style={styles.crewRow}>
-                  <View style={styles.crewAvatar}>
-                    <Text style={styles.crewAvatarText}>{m.full_name?.[0]?.toUpperCase() || '?'}</Text>
+                <View key={i} style={themedStyles.crewRow}>
+                  <View style={themedStyles.crewAvatar}>
+                    <Text style={themedStyles.crewAvatarText}>{m.full_name?.[0]?.toUpperCase() || '?'}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.crewName}>{m.full_name}</Text>
-                    <Text style={styles.crewRole}>{m.role_name}</Text>
+                    <Text style={themedStyles.crewName}>{m.full_name}</Text>
+                    <Text style={themedStyles.crewRole}>{m.role_name}</Text>
                   </View>
                   <Icon name="checkmark-circle" size={20} color="#10B981" />
                 </View>
@@ -303,14 +305,14 @@ export default function CallSheetView({ route, navigation }: ProjectsScreenProps
       </ScrollView>
 
       {/* Save Button */}
-      <View style={styles.footer}>
-        <AnimatedPressable style={styles.saveBtn} onPress={handleSaveCallSheet} disabled={saving}>
+      <View style={themedStyles.footer}>
+        <AnimatedPressable style={themedStyles.saveBtn} onPress={handleSaveCallSheet} disabled={saving}>
           {saving ? (
             <ActivityIndicator color="#fff" />
           ) : (
             <>
               <Icon name="save-outline" size={18} color="#fff" style={{ marginRight: 8 }} />
-              <Text style={styles.saveBtnText}>Save Call Sheet</Text>
+              <Text style={themedStyles.saveBtnText}>Save Call Sheet</Text>
             </>
           )}
         </AnimatedPressable>

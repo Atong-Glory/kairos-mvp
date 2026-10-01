@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import {
   View, Text, StyleSheet, TouchableOpacity, FlatList,
   ActivityIndicator, Alert, Modal, TextInput,
@@ -46,6 +47,7 @@ const formatCurrency = (n: number) =>
   `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export default function BudgetTracker({ route, navigation }: ProjectsScreenProps<'BudgetTracker'>) {
+  const themedStyles = usePaletteStyles(styles);
   const { projectId } = route.params;
   const { isEditor } = usePermissions();
   const canEdit = isEditor(projectId);
@@ -155,73 +157,73 @@ export default function BudgetTracker({ route, navigation }: ProjectsScreenProps
   const burnColor = burnRate > 90 ? '#EF4444' : burnRate > 70 ? '#F59E0B' : '#10B981';
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+    <SafeAreaView style={themedStyles.container}>
+      <View style={themedStyles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={themedStyles.backBtn}>
           <Icon name="arrow-back" size={24} color="#F8FAFC" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Budget Tracker</Text>
+        <Text style={themedStyles.headerTitle}>Budget Tracker</Text>
         {canEdit ? (
-          <TouchableOpacity style={styles.addBtn} onPress={openAdd}>
+          <TouchableOpacity style={themedStyles.addBtn} onPress={openAdd}>
             <Icon name="add" size={24} color="#3B82F6" />
           </TouchableOpacity>
         ) : (
-          <View style={styles.addBtn} />
+          <View style={themedStyles.addBtn} />
         )}
       </View>
 
       {!canEdit && (
-        <View style={styles.permissionNotice}>
+        <View style={themedStyles.permissionNotice}>
           <Icon name="lock-closed" size={16} color="#F59E0B" />
-          <Text style={styles.permissionText}>Budget data is view-only for your role</Text>
+          <Text style={themedStyles.permissionText}>Budget data is view-only for your role</Text>
         </View>
       )}
 
       {loading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color="#3B82F6" /></View>
+        <View style={themedStyles.center}><ActivityIndicator size="large" color="#3B82F6" /></View>
       ) : (
-        <ScrollView contentContainerStyle={styles.scroll}>
+        <ScrollView contentContainerStyle={themedStyles.scroll}>
           {/* Summary Cards */}
-          <View style={styles.summaryRow}>
-            <View style={[styles.summaryCard, { borderLeftColor: '#3B82F6' }]}>
-              <Text style={styles.summaryLabel}>TOTAL BUDGET</Text>
-              <Text style={styles.summaryValue}>{formatCurrency(totalPlanned)}</Text>
+          <View style={themedStyles.summaryRow}>
+            <View style={[themedStyles.summaryCard, { borderLeftColor: '#3B82F6' }]}>
+              <Text style={themedStyles.summaryLabel}>TOTAL BUDGET</Text>
+              <Text style={themedStyles.summaryValue}>{formatCurrency(totalPlanned)}</Text>
             </View>
-            <View style={[styles.summaryCard, { borderLeftColor: '#10B981' }]}>
-              <Text style={styles.summaryLabel}>SPENT</Text>
-              <Text style={[styles.summaryValue, { color: '#10B981' }]}>{formatCurrency(totalActual)}</Text>
+            <View style={[themedStyles.summaryCard, { borderLeftColor: '#10B981' }]}>
+              <Text style={themedStyles.summaryLabel}>SPENT</Text>
+              <Text style={[themedStyles.summaryValue, { color: '#10B981' }]}>{formatCurrency(totalActual)}</Text>
             </View>
           </View>
 
-          <View style={styles.summaryRow}>
-            <View style={[styles.summaryCard, { borderLeftColor: remaining >= 0 ? '#F59E0B' : '#EF4444' }]}>
-              <Text style={styles.summaryLabel}>REMAINING</Text>
-              <Text style={[styles.summaryValue, { color: remaining >= 0 ? '#F8FAFC' : '#EF4444' }]}>
+          <View style={themedStyles.summaryRow}>
+            <View style={[themedStyles.summaryCard, { borderLeftColor: remaining >= 0 ? '#F59E0B' : '#EF4444' }]}>
+              <Text style={themedStyles.summaryLabel}>REMAINING</Text>
+              <Text style={[themedStyles.summaryValue, { color: remaining >= 0 ? '#F8FAFC' : '#EF4444' }]}>
                 {formatCurrency(Math.abs(remaining))}{remaining < 0 ? ' OVER' : ''}
               </Text>
             </View>
-            <View style={[styles.summaryCard, { borderLeftColor: burnColor }]}>
-              <Text style={styles.summaryLabel}>BURN RATE</Text>
-              <Text style={[styles.summaryValue, { color: burnColor }]}>{burnRate.toFixed(1)}%</Text>
+            <View style={[themedStyles.summaryCard, { borderLeftColor: burnColor }]}>
+              <Text style={themedStyles.summaryLabel}>BURN RATE</Text>
+              <Text style={[themedStyles.summaryValue, { color: burnColor }]}>{burnRate.toFixed(1)}%</Text>
             </View>
           </View>
 
           {/* Burn Rate Bar */}
-          <View style={styles.burnBarContainer}>
-            <View style={styles.burnBarBg}>
-              <View style={[styles.burnBarFill, { width: `${Math.min(burnRate, 100)}%` as any, backgroundColor: burnColor }]} />
+          <View style={themedStyles.burnBarContainer}>
+            <View style={themedStyles.burnBarBg}>
+              <View style={[themedStyles.burnBarFill, { width: `${Math.min(burnRate, 100)}%` as any, backgroundColor: burnColor }]} />
             </View>
-            <Text style={[styles.burnBarLabel, { color: burnColor }]}>
+            <Text style={[themedStyles.burnBarLabel, { color: burnColor }]}>
               {burnRate.toFixed(1)}% of budget used
             </Text>
           </View>
 
           {/* Budget Items */}
           {items.length === 0 ? (
-            <View style={styles.emptyCard}>
+            <View style={themedStyles.emptyCard}>
               <Icon name="wallet-outline" size={56} color="#334155" />
-              <Text style={styles.emptyTitle}>No Budget Items</Text>
-              <Text style={styles.emptySub}>Tap + to add your first budget line item.</Text>
+              <Text style={themedStyles.emptyTitle}>No Budget Items</Text>
+              <Text style={themedStyles.emptySub}>Tap + to add your first budget line item.</Text>
             </View>
           ) : (
             Object.keys(grouped).map(category => {
@@ -229,37 +231,37 @@ export default function BudgetTracker({ route, navigation }: ProjectsScreenProps
               const catActual = grouped[category].reduce((s, i) => s + (i.actual_amount || 0), 0);
               const color = CATEGORY_COLORS[category] || '#64748B';
               return (
-                <View key={category} style={styles.categorySection}>
-                  <View style={styles.categoryHeader}>
-                    <View style={[styles.categoryDot, { backgroundColor: color }]} />
-                    <Text style={styles.categoryTitle}>{category}</Text>
-                    <Text style={styles.categoryTotal}>
+                <View key={category} style={themedStyles.categorySection}>
+                  <View style={themedStyles.categoryHeader}>
+                    <View style={[themedStyles.categoryDot, { backgroundColor: color }]} />
+                    <Text style={themedStyles.categoryTitle}>{category}</Text>
+                    <Text style={themedStyles.categoryTotal}>
                       {formatCurrency(catActual)} / {formatCurrency(catPlanned)}
                     </Text>
                   </View>
                   {grouped[category].map(item => (
                     <TouchableOpacity
                       key={item.id}
-                      style={styles.lineItem}
+                      style={themedStyles.lineItem}
                       onPress={() => openEdit(item)}
                       onLongPress={() => handleDelete(item)}
                       activeOpacity={0.75}
                     >
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.itemDesc}>{item.description}</Text>
-                        <View style={styles.amountRow}>
-                          <Text style={styles.plannedAmt}>Budget: {formatCurrency(item.planned_amount)}</Text>
+                        <Text style={themedStyles.itemDesc}>{item.description}</Text>
+                        <View style={themedStyles.amountRow}>
+                          <Text style={themedStyles.plannedAmt}>Budget: {formatCurrency(item.planned_amount)}</Text>
                           <Text style={[
-                            styles.actualAmt,
+                            themedStyles.actualAmt,
                             { color: item.actual_amount > item.planned_amount ? '#EF4444' : '#10B981' }
                           ]}>
                             Actual: {formatCurrency(item.actual_amount)}
                           </Text>
                         </View>
                         {/* Mini progress bar */}
-                        <View style={styles.miniBarBg}>
+                        <View style={themedStyles.miniBarBg}>
                           <View style={[
-                            styles.miniBarFill,
+                            themedStyles.miniBarFill,
                             {
                               width: `${Math.min(item.planned_amount > 0 ? (item.actual_amount / item.planned_amount) * 100 : 0, 100)}%` as any,
                               backgroundColor: item.actual_amount > item.planned_amount ? '#EF4444' : color,
@@ -280,54 +282,54 @@ export default function BudgetTracker({ route, navigation }: ProjectsScreenProps
       {/* Add / Edit Modal */}
       <Modal visible={addModal} transparent animationType="slide" onRequestClose={() => setAddModal(false)}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalSheet}>
-              <View style={styles.modalHandle} />
-              <Text style={styles.modalTitle}>{editItem ? 'Edit Item' : 'Add Budget Item'}</Text>
+          <View style={themedStyles.modalOverlay}>
+            <View style={themedStyles.modalSheet}>
+              <View style={themedStyles.modalHandle} />
+              <Text style={themedStyles.modalTitle}>{editItem ? 'Edit Item' : 'Add Budget Item'}</Text>
 
               <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Category picker */}
-                <Text style={styles.inputLabel}>Category</Text>
+                <Text style={themedStyles.inputLabel}>Category</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-                  <View style={styles.catPicker}>
+                  <View style={themedStyles.catPicker}>
                     {CATEGORIES.map(cat => (
                       <TouchableOpacity
                         key={cat}
-                        style={[styles.catChip, form.category === cat && { backgroundColor: `${CATEGORY_COLORS[cat]}30`, borderColor: CATEGORY_COLORS[cat] }]}
+                        style={[themedStyles.catChip, form.category === cat && { backgroundColor: `${CATEGORY_COLORS[cat]}30`, borderColor: CATEGORY_COLORS[cat] }]}
                         onPress={() => setForm(f => ({ ...f, category: cat }))}
                       >
-                        <Text style={[styles.catChipText, form.category === cat && { color: CATEGORY_COLORS[cat] }]}>{cat}</Text>
+                        <Text style={[themedStyles.catChipText, form.category === cat && { color: CATEGORY_COLORS[cat] }]}>{cat}</Text>
                       </TouchableOpacity>
                     ))}
                   </View>
                 </ScrollView>
 
-                <Text style={styles.inputLabel}>Description *</Text>
-                <TextInput style={styles.input} placeholder="e.g. Director's Fee" placeholderTextColor="#64748B"
+                <Text style={themedStyles.inputLabel}>Description *</Text>
+                <TextInput style={themedStyles.input} placeholder="e.g. Director's Fee" placeholderTextColor="#64748B"
                   value={form.description} onChangeText={v => setForm(f => ({ ...f, description: v }))} />
 
-                <View style={styles.amountInputRow}>
+                <View style={themedStyles.amountInputRow}>
                   <View style={{ flex: 1, marginRight: 8 }}>
-                    <Text style={styles.inputLabel}>Planned ($) *</Text>
-                    <TextInput style={styles.input} placeholder="0.00" placeholderTextColor="#64748B"
+                    <Text style={themedStyles.inputLabel}>Planned ($) *</Text>
+                    <TextInput style={themedStyles.input} placeholder="0.00" placeholderTextColor="#64748B"
                       keyboardType="decimal-pad" value={form.planned_amount}
                       onChangeText={v => setForm(f => ({ ...f, planned_amount: v }))} />
                   </View>
                   <View style={{ flex: 1, marginLeft: 8 }}>
-                    <Text style={styles.inputLabel}>Actual ($)</Text>
-                    <TextInput style={styles.input} placeholder="0.00" placeholderTextColor="#64748B"
+                    <Text style={themedStyles.inputLabel}>Actual ($)</Text>
+                    <TextInput style={themedStyles.input} placeholder="0.00" placeholderTextColor="#64748B"
                       keyboardType="decimal-pad" value={form.actual_amount}
                       onChangeText={v => setForm(f => ({ ...f, actual_amount: v }))} />
                   </View>
                 </View>
               </ScrollView>
 
-              <View style={styles.modalActions}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => setAddModal(false)}>
-                  <Text style={styles.cancelText}>Cancel</Text>
+              <View style={themedStyles.modalActions}>
+                <TouchableOpacity style={themedStyles.cancelBtn} onPress={() => setAddModal(false)}>
+                  <Text style={themedStyles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
-                <AnimatedPressable style={styles.saveBtn} onPress={handleSave} disabled={saving}>
-                  {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>{editItem ? 'Save Changes' : 'Add Item'}</Text>}
+                <AnimatedPressable style={themedStyles.saveBtn} onPress={handleSave} disabled={saving}>
+                  {saving ? <ActivityIndicator color="#fff" /> : <Text style={themedStyles.saveText}>{editItem ? 'Save Changes' : 'Add Item'}</Text>}
                 </AnimatedPressable>
               </View>
             </View>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import {
   View, Text, StyleSheet, TouchableOpacity, FlatList,
   ActivityIndicator, Alert, Image, TextInput, Modal,
@@ -26,6 +27,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const COLUMN_WIDTH = (SCREEN_WIDTH - 48 - 12) / 2;
 
 export default function StoryboardContinuity({ route, navigation }: ProjectsScreenProps<'StoryboardContinuity'>) {
+  const themedStyles = usePaletteStyles(styles);
   const { projectId, project } = route.params;
   const { user } = useAuth();
   const [photos, setPhotos] = useState<ContinuityPhoto[]>([]);
@@ -141,51 +143,51 @@ export default function StoryboardContinuity({ route, navigation }: ProjectsScre
 
   const renderPhoto = ({ item }: { item: ContinuityPhoto }) => (
     <TouchableOpacity
-      style={styles.photoCard}
+      style={themedStyles.photoCard}
       onPress={() => setViewerPhoto(item)}
       onLongPress={() => handleDelete(item)}
       activeOpacity={0.8}
     >
-      <Image source={{ uri: item.photo_url }} style={styles.photoImage} />
+      <Image source={{ uri: item.photo_url }} style={themedStyles.photoImage} />
       {item.annotation ? (
-        <View style={styles.annotationOverlay}>
-          <Text style={styles.annotationText} numberOfLines={2}>{item.annotation}</Text>
+        <View style={themedStyles.annotationOverlay}>
+          <Text style={themedStyles.annotationText} numberOfLines={2}>{item.annotation}</Text>
         </View>
       ) : null}
-      <Text style={styles.photoDate}>
+      <Text style={themedStyles.photoDate}>
         {new Date(item.taken_at).toLocaleDateString()}
       </Text>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={themedStyles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+      <View style={themedStyles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={themedStyles.backBtn}>
           <Icon name="arrow-back" size={24} color="#F8FAFC" />
         </TouchableOpacity>
         <View>
-          <Text style={styles.headerTitle}>Storyboard & Continuity</Text>
-          <Text style={styles.headerSub}>{photos.length} photos</Text>
+          <Text style={themedStyles.headerTitle}>Storyboard & Continuity</Text>
+          <Text style={themedStyles.headerSub}>{photos.length} photos</Text>
         </View>
         <View style={{ flex: 1 }} />
       </View>
 
       {uploading && (
-        <View style={styles.uploadingBar}>
+        <View style={themedStyles.uploadingBar}>
           <ActivityIndicator size="small" color="#3B82F6" />
-          <Text style={styles.uploadingText}>Uploading photo...</Text>
+          <Text style={themedStyles.uploadingText}>Uploading photo...</Text>
         </View>
       )}
 
       {loading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color="#3B82F6" /></View>
+        <View style={themedStyles.center}><ActivityIndicator size="large" color="#3B82F6" /></View>
       ) : photos.length === 0 ? (
-        <View style={styles.empty}>
+        <View style={themedStyles.empty}>
           <Icon name="images-outline" size={72} color="#334155" />
-          <Text style={styles.emptyTitle}>No Photos Yet</Text>
-          <Text style={styles.emptySub}>
+          <Text style={themedStyles.emptyTitle}>No Photos Yet</Text>
+          <Text style={themedStyles.emptySub}>
             Capture continuity photos on set or upload storyboard frames to keep your visual references organized.
           </Text>
         </View>
@@ -195,17 +197,17 @@ export default function StoryboardContinuity({ route, navigation }: ProjectsScre
           keyExtractor={item => item.id}
           renderItem={renderPhoto}
           numColumns={2}
-          columnWrapperStyle={styles.gridRow}
-          contentContainerStyle={styles.list}
+          columnWrapperStyle={themedStyles.gridRow}
+          contentContainerStyle={themedStyles.list}
         />
       )}
 
       {/* Action Buttons */}
-      <View style={styles.fabRow}>
-        <AnimatedPressable style={styles.fabSecondary} onPress={() => pickImage(false)}>
+      <View style={themedStyles.fabRow}>
+        <AnimatedPressable style={themedStyles.fabSecondary} onPress={() => pickImage(false)}>
           <Icon name="image-outline" size={24} color="#3B82F6" />
         </AnimatedPressable>
-        <AnimatedPressable style={styles.fab} onPress={() => pickImage(true)}>
+        <AnimatedPressable style={themedStyles.fab} onPress={() => pickImage(true)}>
           <Icon name="camera" size={28} color="#FFFFFF" />
         </AnimatedPressable>
       </View>
@@ -213,18 +215,18 @@ export default function StoryboardContinuity({ route, navigation }: ProjectsScre
       {/* Annotation Modal */}
       <Modal visible={annotationModal} transparent animationType="slide" onRequestClose={() => setAnnotationModal(false)}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalSheet}>
-              <View style={styles.modalHandle} />
-              <Text style={styles.modalTitle}>Add Annotation</Text>
+          <View style={themedStyles.modalOverlay}>
+            <View style={themedStyles.modalSheet}>
+              <View style={themedStyles.modalHandle} />
+              <Text style={themedStyles.modalTitle}>Add Annotation</Text>
 
               {pendingUri && (
-                <Image source={{ uri: pendingUri }} style={styles.previewImage} />
+                <Image source={{ uri: pendingUri }} style={themedStyles.previewImage} />
               )}
 
-              <Text style={styles.inputLabel}>Notes (optional)</Text>
+              <Text style={themedStyles.inputLabel}>Notes (optional)</Text>
               <TextInput
-                style={styles.input}
+                style={themedStyles.input}
                 placeholder="e.g. Scene 12 — Hair down, blue jacket, watch on left wrist"
                 placeholderTextColor="#64748B"
                 multiline
@@ -233,13 +235,13 @@ export default function StoryboardContinuity({ route, navigation }: ProjectsScre
                 onChangeText={setAnnotation}
               />
 
-              <View style={styles.modalActions}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => { setAnnotationModal(false); setPendingUri(null); }}>
-                  <Text style={styles.cancelText}>Cancel</Text>
+              <View style={themedStyles.modalActions}>
+                <TouchableOpacity style={themedStyles.cancelBtn} onPress={() => { setAnnotationModal(false); setPendingUri(null); }}>
+                  <Text style={themedStyles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
-                <AnimatedPressable style={styles.saveBtn} onPress={handleUpload}>
+                <AnimatedPressable style={themedStyles.saveBtn} onPress={handleUpload}>
                   <Icon name="cloud-upload-outline" size={18} color="#fff" style={{ marginRight: 6 }} />
-                  <Text style={styles.saveText}>Upload</Text>
+                  <Text style={themedStyles.saveText}>Upload</Text>
                 </AnimatedPressable>
               </View>
             </View>
@@ -249,16 +251,16 @@ export default function StoryboardContinuity({ route, navigation }: ProjectsScre
 
       {/* Full-Screen Viewer */}
       <Modal visible={!!viewerPhoto} transparent animationType="fade" onRequestClose={() => setViewerPhoto(null)}>
-        <View style={styles.viewerContainer}>
-          <TouchableOpacity style={styles.viewerClose} onPress={() => setViewerPhoto(null)}>
+        <View style={themedStyles.viewerContainer}>
+          <TouchableOpacity style={themedStyles.viewerClose} onPress={() => setViewerPhoto(null)}>
             <Icon name="close" size={28} color="#F8FAFC" />
           </TouchableOpacity>
           {viewerPhoto && (
             <>
-              <Image source={{ uri: viewerPhoto.photo_url }} style={styles.viewerImage} resizeMode="contain" />
+              <Image source={{ uri: viewerPhoto.photo_url }} style={themedStyles.viewerImage} resizeMode="contain" />
               {viewerPhoto.annotation ? (
-                <View style={styles.viewerAnnotation}>
-                  <Text style={styles.viewerAnnotationText}>{viewerPhoto.annotation}</Text>
+                <View style={themedStyles.viewerAnnotation}>
+                  <Text style={themedStyles.viewerAnnotationText}>{viewerPhoto.annotation}</Text>
                 </View>
               ) : null}
             </>

@@ -1,10 +1,11 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { PermissionsProvider } from './src/context/PermissionsContext';
 import { NotificationsProvider } from './src/context/NotificationsContext';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { ActivityIndicator, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Toast from 'react-native-toast-message';
@@ -44,11 +45,12 @@ function AuthStack() {
 }
 
 function ProjectsStackNavigator() {
+  const { theme } = useTheme();
   return (
     <ProjectsStack.Navigator 
       screenOptions={{ 
         headerShown: false,
-        cardStyle: { backgroundColor: '#0F172A' }
+        cardStyle: { backgroundColor: theme.colors.background }
       }}
     >
       <ProjectsStack.Screen name="DashboardList" component={Dashboard} />
@@ -70,18 +72,19 @@ function ProjectsStackNavigator() {
 }
 
 function MainTabs() {
+  const { theme } = useTheme();
   return (
     <Tab.Navigator 
       screenOptions={{ 
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#1E293B',
-          borderTopColor: '#334155',
+          backgroundColor: theme.colors.tabBar,
+          borderTopColor: theme.colors.border,
           height: 60,
           paddingBottom: 8,
         },
-        tabBarActiveTintColor: '#3B82F6',
-        tabBarInactiveTintColor: '#64748B',
+        tabBarActiveTintColor: theme.colors.accent,
+        tabBarInactiveTintColor: theme.colors.textMuted,
       }}
     >
       <Tab.Screen 
@@ -99,18 +102,31 @@ function MainTabs() {
 }
 
 function NavigationWrapper() {
-  const { session, isLoading } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
+  const { theme, isLoading: themeLoading } = useTheme();
 
-  if (isLoading) {
+  if (authLoading || themeLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0F172A' }}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+        <ActivityIndicator size="large" color={theme.colors.accent} />
       </View>
     );
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={{
+      ...DefaultTheme,
+      dark: theme.palette === 'midnight',
+      colors: {
+        ...DefaultTheme.colors,
+        primary: theme.colors.accent,
+        background: theme.colors.background,
+        card: theme.colors.surface,
+        text: theme.colors.text,
+        border: theme.colors.border,
+        notification: theme.colors.danger,
+      },
+    }}>
       {session && session.user ? <MainTabs /> : <AuthStack />}
     </NavigationContainer>
   );
@@ -118,13 +134,15 @@ function NavigationWrapper() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <PermissionsProvider>
-        <NotificationsProvider>
-          <NavigationWrapper />
-          <Toast />
-        </NotificationsProvider>
-      </PermissionsProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <PermissionsProvider>
+          <NotificationsProvider>
+            <NavigationWrapper />
+            <Toast />
+          </NotificationsProvider>
+        </PermissionsProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Dimensions, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -11,6 +12,7 @@ import { ProjectsScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
 
 export default function ScriptViewer({ route, navigation }: ProjectsScreenProps<'ScriptViewer'>) {
+  const themedStyles = usePaletteStyles(styles);
   const { projectId, project } = route.params;
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -85,32 +87,32 @@ export default function ScriptViewer({ route, navigation }: ProjectsScreenProps<
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+    <SafeAreaView style={themedStyles.container}>
+      <View style={themedStyles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={themedStyles.backBtn}>
           <Icon name="arrow-back" size={24} color="#F8FAFC" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>Script Viewer</Text>
-        <TouchableOpacity style={styles.settingsBtn} onPress={handleUpload}>
+        <Text style={themedStyles.headerTitle} numberOfLines={1}>Script Viewer</Text>
+        <TouchableOpacity style={themedStyles.settingsBtn} onPress={handleUpload}>
           <Icon name="cloud-upload-outline" size={24} color="#F8FAFC" />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
+      <View style={themedStyles.content}>
         {loading || uploading ? (
-          <View style={styles.centerContainer}>
+          <View style={themedStyles.centerContainer}>
             <ActivityIndicator size="large" color="#3B82F6" />
-            <Text style={styles.statusText}>{uploading ? 'Uploading Script...' : 'Loading...'}</Text>
+            <Text style={themedStyles.statusText}>{uploading ? 'Uploading Script...' : 'Loading...'}</Text>
           </View>
         ) : pdfUrl ? (
           <WebView
             source={{ uri: pdfUrl }}
-            style={styles.webview}
+            style={themedStyles.webview}
             startInLoadingState
             renderLoading={() => (
-              <View style={styles.loadingContainer}>
+              <View style={themedStyles.loadingContainer}>
                 <ActivityIndicator size="large" color="#3B82F6" />
-                <Text style={styles.loadingText}>Loading PDF...</Text>
+                <Text style={themedStyles.loadingText}>Loading PDF...</Text>
               </View>
             )}
             scalesPageToFit={true}
@@ -125,15 +127,15 @@ export default function ScriptViewer({ route, navigation }: ProjectsScreenProps<
             }}
           />
         ) : (
-          <View style={styles.emptyContainer}>
+          <View style={themedStyles.emptyContainer}>
             <Icon name="document-text-outline" size={80} color="#334155" />
-            <Text style={styles.emptyTitle}>No Script Uploaded</Text>
-            <Text style={styles.emptySubText}>
+            <Text style={themedStyles.emptyTitle}>No Script Uploaded</Text>
+            <Text style={themedStyles.emptySubText}>
               Upload the master PDF script to start breaking it down into scenes and assigning roles.
             </Text>
-            <AnimatedPressable style={styles.uploadBtn} onPress={handleUpload}>
+            <AnimatedPressable style={themedStyles.uploadBtn} onPress={handleUpload}>
               <Icon name="add" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-              <Text style={styles.uploadBtnText}>Upload PDF</Text>
+              <Text style={themedStyles.uploadBtnText}>Upload PDF</Text>
             </AnimatedPressable>
           </View>
         )}

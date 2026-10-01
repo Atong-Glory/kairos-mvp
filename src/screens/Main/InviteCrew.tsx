@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
   ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView
@@ -14,6 +15,7 @@ import AnimatedPressable from '../../components/AnimatedPressable';
 type PermissionLevel = 'viewer' | 'editor';
 
 export default function InviteCrew({ route, navigation }: ProjectsScreenProps<'InviteCrew'>) {
+  const themedStyles = usePaletteStyles(styles);
   const { user, tenantId } = useAuth();
   const { projectId } = route.params;
   const [email, setEmail] = useState('');
@@ -94,32 +96,32 @@ export default function InviteCrew({ route, navigation }: ProjectsScreenProps<'I
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={themedStyles.container}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <View style={themedStyles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={themedStyles.backBtn}>
             <Icon name="arrow-back" size={24} color="#F8FAFC" />
           </TouchableOpacity>
-          <Text style={styles.title}>Invite Crew Member</Text>
+          <Text style={themedStyles.title}>Invite Crew Member</Text>
           <View style={{ width: 24 }} />
         </View>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <View style={styles.iconContainer}>
+        <ScrollView style={themedStyles.content} showsVerticalScrollIndicator={false}>
+          <View style={themedStyles.iconContainer}>
             <Icon name="person-add" size={40} color="#3B82F6" />
           </View>
           
-          <Text style={styles.description}>
+          <Text style={themedStyles.description}>
             Send a professional email invitation. They'll receive a sign-up link and be added to your production team.
           </Text>
 
           {/* Full Name Input */}
-          <Text style={styles.label}>Full Name</Text>
+          <Text style={themedStyles.label}>Full Name</Text>
           <TextInput
-            style={styles.input}
+            style={themedStyles.input}
             placeholder="e.g. Jordan Lee"
             placeholderTextColor="#64748B"
             value={fullName}
@@ -129,9 +131,9 @@ export default function InviteCrew({ route, navigation }: ProjectsScreenProps<'I
           />
 
           {/* Email Input */}
-          <Text style={styles.label}>Email Address</Text>
+          <Text style={themedStyles.label}>Email Address</Text>
           <TextInput
-            style={styles.input}
+            style={themedStyles.input}
             placeholder="jordan.lee@studio.com"
             placeholderTextColor="#64748B"
             value={email}
@@ -142,12 +144,12 @@ export default function InviteCrew({ route, navigation }: ProjectsScreenProps<'I
           />
 
           {/* Permission Level Selector */}
-          <Text style={styles.label}>Role & Permissions</Text>
-          <View style={styles.permissionContainer}>
+          <Text style={themedStyles.label}>Role & Permissions</Text>
+          <View style={themedStyles.permissionContainer}>
             <TouchableOpacity
               style={[
-                styles.permissionOption,
-                permissionLevel === 'viewer' && styles.permissionOptionActive,
+                themedStyles.permissionOption,
+                permissionLevel === 'viewer' && themedStyles.permissionOptionActive,
               ]}
               onPress={() => setPermissionLevel('viewer')}
               disabled={loading}
@@ -159,18 +161,18 @@ export default function InviteCrew({ route, navigation }: ProjectsScreenProps<'I
                 style={{ marginRight: 8 }}
               />
               <View style={{ flex: 1 }}>
-                <Text style={[styles.permissionLabel, permissionLevel === 'viewer' && styles.permissionLabelActive]}>
+                <Text style={[themedStyles.permissionLabel, permissionLevel === 'viewer' && themedStyles.permissionLabelActive]}>
                   👀 Viewer
                 </Text>
-                <Text style={styles.permissionDescription}>Read-only access (budgets hidden)</Text>
+                <Text style={themedStyles.permissionDescription}>Read-only access (budgets hidden)</Text>
               </View>
               {permissionLevel === 'viewer' && <Icon name="checkmark-circle" size={24} color="#3B82F6" />}
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[
-                styles.permissionOption,
-                permissionLevel === 'editor' && styles.permissionOptionActive,
+                themedStyles.permissionOption,
+                permissionLevel === 'editor' && themedStyles.permissionOptionActive,
               ]}
               onPress={() => setPermissionLevel('editor')}
               disabled={loading}
@@ -182,39 +184,39 @@ export default function InviteCrew({ route, navigation }: ProjectsScreenProps<'I
                 style={{ marginRight: 8 }}
               />
               <View style={{ flex: 1 }}>
-                <Text style={[styles.permissionLabel, permissionLevel === 'editor' && styles.permissionLabelActive]}>
+                <Text style={[themedStyles.permissionLabel, permissionLevel === 'editor' && themedStyles.permissionLabelActive]}>
                   ✏️ Editor
                 </Text>
-                <Text style={styles.permissionDescription}>Full access (can edit all project data)</Text>
+                <Text style={themedStyles.permissionDescription}>Full access (can edit all project data)</Text>
               </View>
               {permissionLevel === 'editor' && <Icon name="checkmark-circle" size={24} color="#3B82F6" />}
             </TouchableOpacity>
           </View>
 
           {/* Info Box */}
-          <View style={styles.infoBox}>
+          <View style={themedStyles.infoBox}>
             <Icon name="information-circle" size={20} color="#3B82F6" style={{ marginRight: 12 }} />
-            <Text style={styles.infoText}>
+            <Text style={themedStyles.infoText}>
               Viewers can see all project details but can't edit. Editors have full control. You can change permissions later.
             </Text>
           </View>
         </ScrollView>
 
-        <View style={styles.footer}>
+        <View style={themedStyles.footer}>
           <AnimatedPressable
-            style={[styles.button, (!email.trim() || !fullName.trim() || loading) && styles.buttonDisabled]}
+            style={[themedStyles.button, (!email.trim() || !fullName.trim() || loading) && themedStyles.buttonDisabled]}
             onPress={handleInvite}
             disabled={loading || !email.trim() || !fullName.trim()}
           >
             {loading ? (
               <>
                 <ActivityIndicator color="#fff" size="small" />
-                <Text style={[styles.buttonText, { marginLeft: 8 }]}>Sending...</Text>
+                <Text style={[themedStyles.buttonText, { marginLeft: 8 }]}>Sending...</Text>
               </>
             ) : (
               <>
                 <Icon name="paper-plane-outline" size={18} color="#fff" style={{ marginRight: 8 }} />
-                <Text style={styles.buttonText}>Send Invitation</Text>
+                <Text style={themedStyles.buttonText}>Send Invitation</Text>
               </>
             )}
           </AnimatedPressable>

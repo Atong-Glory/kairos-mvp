@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,8 +7,12 @@ import { supabase } from '../../lib/supabase';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { ProjectsScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
+import PaletteSwitcher from '../../components/PaletteSwitcher';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function Dashboard({ navigation }: ProjectsScreenProps<'DashboardList'>) {
+  const themedStyles = usePaletteStyles(styles);
+  const { theme } = useTheme();
   const { user, tenantId, signOut } = useAuth();
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -15,14 +20,14 @@ export default function Dashboard({ navigation }: ProjectsScreenProps<'Dashboard
 
   const fetchProjects = async () => {
     if (!tenantId) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('projects')
         .select('*')
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
-        
+
       if (error) throw error;
       setProjects(data || []);
     } catch (error) {
@@ -55,73 +60,76 @@ export default function Dashboard({ navigation }: ProjectsScreenProps<'Dashboard
   };
 
   const renderProjectCard = ({ item }: { item: any }) => (
-    <TouchableOpacity 
-      style={styles.card} 
+    <TouchableOpacity
+      style={themedStyles.card}
       onPress={() => navigation.navigate('ProjectDetails', { projectId: item.id, project: item })}
       activeOpacity={0.8}
     >
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-          <Text style={styles.statusText}>{item.status.toUpperCase()}</Text>
+      <View style={themedStyles.cardHeader}>
+        <Text style={themedStyles.cardTitle}>{item.name}</Text>
+        <View style={[themedStyles.statusBadge, { backgroundColor: getStatusColor(item.status, theme.colors) }]}>
+          <Text style={themedStyles.statusText}>{item.status.toUpperCase()}</Text>
         </View>
       </View>
-      <View style={styles.cardFooter}>
-        <Text style={styles.dateText}>Script v{item.script_version}</Text>
-        <Text style={styles.dateText}>{new Date(item.created_at).toLocaleDateString()}</Text>
+      <View style={themedStyles.cardFooter}>
+        <Text style={themedStyles.dateText}>Script v{item.script_version}</Text>
+        <Text style={themedStyles.dateText}>{new Date(item.created_at).toLocaleDateString()}</Text>
       </View>
     </TouchableOpacity>
   );
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string, colors: ReturnType<typeof useTheme>['theme']['colors']) => {
     switch(status) {
-      case 'pre-production': return '#F59E0B'; // Amber
-      case 'production': return '#10B981'; // Emerald
-      case 'post-production': return '#3B82F6'; // Blue
-      case 'archived': return '#64748B'; // Slate
-      default: return '#3B82F6';
+      case 'pre-production': return colors.warning;
+      case 'production': return colors.positive;
+      case 'post-production': return colors.accent;
+      case 'archived': return colors.textMuted;
+      default: return colors.accent;
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={themedStyles.container}>
+      <View style={themedStyles.header}>
         <View>
-          <Text style={styles.greeting}>Hello, {user?.email?.split('@')[0]}</Text>
-          <Text style={styles.title}>Your Projects</Text>
+          <Text style={themedStyles.greeting}>Hello, {user?.email?.split('@')[0]}</Text>
+          <Text style={themedStyles.title}>Your Projects</Text>
         </View>
-        <TouchableOpacity onPress={signOut} style={styles.signOutBtn}>
-          <Icon name="log-out-outline" size={24} color="#94A3B8" />
+        <TouchableOpacity onPress={signOut} style={themedStyles.signOutBtn}>
+          <Icon name="log-out-outline" size={24} color={theme.colors.textSecondary} />
         </TouchableOpacity>
       </View>
-      
+      <View style={{ paddingBottom: 12 }}>
+        <PaletteSwitcher compact />
+      </View>
+
       {loading ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#3B82F6" />
+        <View style={themedStyles.centerContainer}>
+          <ActivityIndicator size="large" color={theme.colors.accent} />
         </View>
       ) : projects.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Icon name="folder-open-outline" size={64} color="#334155" />
-          <Text style={styles.emptyText}>No projects yet.</Text>
-          <Text style={styles.emptySubText}>Tap the + button below to create your first production.</Text>
+        <View style={themedStyles.emptyContainer}>
+          <Icon name="folder-open-outline" size={64} color={theme.colors.border} />
+          <Text style={themedStyles.emptyText}>No projects yet.</Text>
+          <Text style={themedStyles.emptySubText}>Tap the + button below to create your first production.</Text>
         </View>
       ) : (
         <FlatList
           data={projects}
           keyExtractor={(item) => item.id}
           renderItem={renderProjectCard}
-          contentContainerStyle={styles.listContainer}
+          contentContainerStyle={themedStyles.listContainer}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3B82F6" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.accent} />
           }
         />
       )}
 
-      <AnimatedPressable 
-        style={styles.fab} 
+      <AnimatedPressable
+        style={themedStyles.fab}
         onPress={() => navigation.navigate('CreateProject')}
       >
-        <Icon name="add" size={32} color="#FFFFFF" />
+        <Icon name="add" size={32} color={theme.colors.accentContrast} />
       </AnimatedPressable>
     </SafeAreaView>
   );

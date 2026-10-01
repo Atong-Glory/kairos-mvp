@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import {
   View,
   Text,
@@ -26,6 +27,7 @@ type Message = {
 };
 
 export default function TeamChat({ route, navigation }: ProjectsScreenProps<'TeamChat'>) {
+  const themedStyles = usePaletteStyles(styles);
   const { projectId, project } = route.params;
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -131,24 +133,24 @@ export default function TeamChat({ route, navigation }: ProjectsScreenProps<'Tea
     return (
       <View>
         {showDateSeparator && (
-          <View style={styles.dateSeparator}>
-            <View style={styles.dateLine} />
-            <Text style={styles.dateLabel}>{formatDate(item.created_at)}</Text>
-            <View style={styles.dateLine} />
+          <View style={themedStyles.dateSeparator}>
+            <View style={themedStyles.dateLine} />
+            <Text style={themedStyles.dateLabel}>{formatDate(item.created_at)}</Text>
+            <View style={themedStyles.dateLine} />
           </View>
         )}
-        <View style={[styles.messageRow, isOwn ? styles.messageRowRight : styles.messageRowLeft]}>
+        <View style={[themedStyles.messageRow, isOwn ? themedStyles.messageRowRight : themedStyles.messageRowLeft]}>
           {!isOwn && (
-            <View style={styles.avatar}>
+            <View style={themedStyles.avatar}>
               <Icon name="person" size={16} color="#94A3B8" />
             </View>
           )}
-          <View style={[styles.messageBubble, isOwn ? styles.ownBubble : styles.otherBubble]}>
-            {!isOwn && <Text style={styles.senderName}>{getSenderName(item.user_id)}</Text>}
-            <Text style={[styles.messageText, isOwn ? styles.ownMessageText : styles.otherMessageText]}>
+          <View style={[themedStyles.messageBubble, isOwn ? themedStyles.ownBubble : themedStyles.otherBubble]}>
+            {!isOwn && <Text style={themedStyles.senderName}>{getSenderName(item.user_id)}</Text>}
+            <Text style={[themedStyles.messageText, isOwn ? themedStyles.ownMessageText : themedStyles.otherMessageText]}>
               {item.content}
             </Text>
-            <Text style={[styles.timestamp, isOwn ? styles.ownTimestamp : styles.otherTimestamp]}>
+            <Text style={[themedStyles.timestamp, isOwn ? themedStyles.ownTimestamp : themedStyles.otherTimestamp]}>
               {formatTime(item.created_at)}
             </Text>
           </View>
@@ -158,20 +160,20 @@ export default function TeamChat({ route, navigation }: ProjectsScreenProps<'Tea
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={themedStyles.container} edges={['top']}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+      <View style={themedStyles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={themedStyles.backBtn}>
           <Icon name="arrow-back" size={24} color="#F8FAFC" />
         </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle} numberOfLines={1}>Team Chat</Text>
-          <Text style={styles.headerSubtitle} numberOfLines={1}>
+        <View style={themedStyles.headerCenter}>
+          <Text style={themedStyles.headerTitle} numberOfLines={1}>Team Chat</Text>
+          <Text style={themedStyles.headerSubtitle} numberOfLines={1}>
             {project?.name || 'Project'}
           </Text>
         </View>
         <AnimatedPressable
-          style={styles.videoBtn}
+          style={themedStyles.videoBtn}
           onPress={() => navigation.navigate('VideoCall', { projectId })}
         >
           <Icon name="videocam-outline" size={24} color="#3B82F6" />
@@ -180,7 +182,7 @@ export default function TeamChat({ route, navigation }: ProjectsScreenProps<'Tea
 
       {/* Messages */}
       {loading ? (
-        <View style={styles.centerContainer}>
+        <View style={themedStyles.centerContainer}>
           <ActivityIndicator size="large" color="#3B82F6" />
         </View>
       ) : (
@@ -190,13 +192,13 @@ export default function TeamChat({ route, navigation }: ProjectsScreenProps<'Tea
           keyExtractor={(item) => item.id}
           renderItem={renderMessage}
           inverted
-          contentContainerStyle={styles.messagesList}
+          contentContainerStyle={themedStyles.messagesList}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
+            <View style={themedStyles.emptyContainer}>
               <Icon name="chatbubbles-outline" size={48} color="#334155" />
-              <Text style={styles.emptyText}>No messages yet</Text>
-              <Text style={styles.emptySubText}>Start the conversation with your crew</Text>
+              <Text style={themedStyles.emptyText}>No messages yet</Text>
+              <Text style={themedStyles.emptySubText}>Start the conversation with your crew</Text>
             </View>
           }
         />
@@ -207,9 +209,9 @@ export default function TeamChat({ route, navigation }: ProjectsScreenProps<'Tea
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={0}
       >
-        <View style={styles.inputBar}>
+        <View style={themedStyles.inputBar}>
           <TextInput
-            style={styles.textInput}
+            style={themedStyles.textInput}
             value={newMessage}
             onChangeText={setNewMessage}
             placeholder="Type a message..."
@@ -218,7 +220,7 @@ export default function TeamChat({ route, navigation }: ProjectsScreenProps<'Tea
             maxLength={1000}
           />
           <AnimatedPressable
-            style={[styles.sendBtn, !newMessage.trim() && styles.sendBtnDisabled]}
+            style={[themedStyles.sendBtn, !newMessage.trim() && themedStyles.sendBtnDisabled]}
             onPress={sendMessage}
             disabled={!newMessage.trim() || sending}
           >

@@ -1,11 +1,16 @@
 import React from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import PaletteSwitcher from '../../components/PaletteSwitcher';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function ProjectSettings({ route, navigation }: any) {
+  const themedStyles = usePaletteStyles(styles);
+  const { theme } = useTheme();
   const { projectId, project } = route.params;
   const { tenantId } = useAuth();
 
@@ -121,34 +126,38 @@ export default function ProjectSettings({ route, navigation }: any) {
   };
 
   const statuses = [
-    { key: 'pre-production', label: 'Pre-Production', icon: 'construct-outline', color: '#F59E0B' },
-    { key: 'production', label: 'Production', icon: 'videocam-outline', color: '#10B981' },
-    { key: 'post-production', label: 'Post-Production', icon: 'color-palette-outline', color: '#3B82F6' },
+    { key: 'pre-production', label: 'Pre-Production', icon: 'construct-outline', color: theme.colors.warning },
+    { key: 'production', label: 'Production', icon: 'videocam-outline', color: theme.colors.positive },
+    { key: 'post-production', label: 'Post-Production', icon: 'color-palette-outline', color: theme.colors.accent },
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="arrow-back" size={24} color="#F8FAFC" />
+    <SafeAreaView style={themedStyles.container}>
+      <View style={themedStyles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={themedStyles.backBtn}>
+          <Icon name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Project Settings</Text>
+        <Text style={themedStyles.headerTitle}>Project Settings</Text>
         <View style={{ width: 32 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={themedStyles.content}>
+        <Text style={themedStyles.sectionTitle}>Appearance</Text>
+        <Text style={themedStyles.sectionSub}>Your palette is saved on this device and used throughout KAIRO.</Text>
+        <PaletteSwitcher />
+
         {/* Status Section */}
-        <Text style={styles.sectionTitle}>Production Phase</Text>
-        <Text style={styles.sectionSub}>Change the current status of your project.</Text>
+        <Text style={themedStyles.sectionTitle}>Production Phase</Text>
+        <Text style={themedStyles.sectionSub}>Change the current status of your project.</Text>
 
         {statuses.map(s => (
           <TouchableOpacity
             key={s.key}
-            style={[styles.statusRow, project.status === s.key && { borderColor: s.color, backgroundColor: `${s.color}10` }]}
+            style={[themedStyles.statusRow, project.status === s.key && { borderColor: s.color, backgroundColor: `${s.color}10` }]}
             onPress={() => updateStatus(s.key)}
           >
             <Icon name={s.icon} size={22} color={s.color} />
-            <Text style={styles.statusLabel}>{s.label}</Text>
+            <Text style={themedStyles.statusLabel}>{s.label}</Text>
             {project.status === s.key && (
               <Icon name="checkmark-circle" size={20} color={s.color} />
             )}
@@ -156,21 +165,21 @@ export default function ProjectSettings({ route, navigation }: any) {
         ))}
 
         {/* Clone Section */}
-        <Text style={[styles.sectionTitle, { marginTop: 32 }]}>Duplicate</Text>
-        <Text style={styles.sectionSub}>Create a copy of this project with the same team, budget plan, and scene breakdown.</Text>
+        <Text style={[themedStyles.sectionTitle, { marginTop: 32 }]}>Duplicate</Text>
+        <Text style={themedStyles.sectionSub}>Create a copy of this project with the same team, budget plan, and scene breakdown.</Text>
 
-        <TouchableOpacity style={styles.cloneBtn} onPress={handleClone}>
-          <Icon name="copy-outline" size={20} color="#3B82F6" />
-          <Text style={styles.cloneBtnText}>Clone Project</Text>
+        <TouchableOpacity style={themedStyles.cloneBtn} onPress={handleClone}>
+          <Icon name="copy-outline" size={20} color={theme.colors.accent} />
+          <Text style={themedStyles.cloneBtnText}>Clone Project</Text>
         </TouchableOpacity>
 
         {/* Archive Section */}
-        <Text style={[styles.sectionTitle, { marginTop: 32 }]}>Danger Zone</Text>
-        <Text style={styles.sectionSub}>Archive this project. It will be hidden from the dashboard but not deleted.</Text>
+        <Text style={[themedStyles.sectionTitle, { marginTop: 32 }]}>Danger Zone</Text>
+        <Text style={themedStyles.sectionSub}>Archive this project. It will be hidden from the dashboard but not deleted.</Text>
 
-        <TouchableOpacity style={styles.archiveBtn} onPress={handleArchive}>
-          <Icon name="archive-outline" size={20} color="#EF4444" />
-          <Text style={styles.archiveBtnText}>Archive Project</Text>
+        <TouchableOpacity style={themedStyles.archiveBtn} onPress={handleArchive}>
+          <Icon name="archive-outline" size={20} color={theme.colors.danger} />
+          <Text style={themedStyles.archiveBtnText}>Archive Project</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

@@ -1,10 +1,12 @@
 import React from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { ProjectsScreenProps } from '../../navigation/types';
 
 export default function VideoCall({ route, navigation }: ProjectsScreenProps<'VideoCall'>) {
+  const themedStyles = usePaletteStyles(styles);
   const { projectId } = route.params;
 
   const handleOpenJitsi = async () => {
@@ -31,36 +33,36 @@ export default function VideoCall({ route, navigation }: ProjectsScreenProps<'Vi
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={themedStyles.container} edges={['top']}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+      <View style={themedStyles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={themedStyles.backBtn}>
           <Icon name="arrow-back" size={24} color="#F8FAFC" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Video Call</Text>
-        <View style={styles.placeholder} />
+        <Text style={themedStyles.headerTitle}>Video Call</Text>
+        <View style={themedStyles.placeholder} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={themedStyles.content}>
         {/* Coming Soon Section */}
-        <View style={styles.featureCard}>
-          <View style={styles.iconContainer}>
+        <View style={themedStyles.featureCard}>
+          <View style={themedStyles.iconContainer}>
             <Icon name="videocam-outline" size={64} color="#3B82F6" />
           </View>
 
-          <Text style={styles.title}>Video Calling</Text>
-          <Text style={styles.subtitle}>Feature Coming Soon</Text>
+          <Text style={themedStyles.title}>Video Calling</Text>
+          <Text style={themedStyles.subtitle}>Feature Coming Soon</Text>
 
-          <Text style={styles.description}>
+          <Text style={themedStyles.description}>
             Built-in video calling will be available in KAIRO Pro. For now, use an external video conferencing service below.
           </Text>
 
           {/* Recommendation Box */}
-          <View style={styles.recommendationBox}>
+          <View style={themedStyles.recommendationBox}>
             <Icon name="star-outline" size={20} color="#F59E0B" style={{ marginRight: 8 }} />
             <View style={{ flex: 1 }}>
-              <Text style={styles.recommendationTitle}>Recommended</Text>
-              <Text style={styles.recommendationText}>
+              <Text style={themedStyles.recommendationTitle}>Recommended</Text>
+              <Text style={themedStyles.recommendationText}>
                 Use Jitsi Meet for free, secure video calls without an account
               </Text>
             </View>
@@ -68,17 +70,17 @@ export default function VideoCall({ route, navigation }: ProjectsScreenProps<'Vi
         </View>
 
         {/* Quick Links Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Links</Text>
+        <View style={themedStyles.section}>
+          <Text style={themedStyles.sectionTitle}>Quick Links</Text>
 
           {/* Jitsi Option */}
-          <TouchableOpacity style={styles.optionCard} onPress={handleOpenJitsi}>
-            <View style={[styles.optionIcon, { backgroundColor: '#E8F5E920' }]}>
+          <TouchableOpacity style={themedStyles.optionCard} onPress={handleOpenJitsi}>
+            <View style={[themedStyles.optionIcon, { backgroundColor: '#E8F5E920' }]}>
               <Icon name="videocam" size={24} color="#10B981" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.optionTitle}>Jitsi Meet (Recommended)</Text>
-              <Text style={styles.optionDesc}>
+              <Text style={themedStyles.optionTitle}>Jitsi Meet (Recommended)</Text>
+              <Text style={themedStyles.optionDesc}>
                 Free, secure, no account needed • Project ID: {projectId}
               </Text>
             </View>
@@ -86,48 +88,48 @@ export default function VideoCall({ route, navigation }: ProjectsScreenProps<'Vi
           </TouchableOpacity>
 
           {/* Other Options */}
-          <TouchableOpacity 
-            style={styles.optionCard}
+          <TouchableOpacity
+            style={themedStyles.optionCard}
             onPress={() => openExternalProvider('https://www.google.com/meet/')}
           >
-            <View style={[styles.optionIcon, { backgroundColor: '#3B82F620' }]}>
+            <View style={[themedStyles.optionIcon, { backgroundColor: '#3B82F620' }]}>
               <Icon name="logo-google" size={24} color="#4285F4" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.optionTitle}>Google Meet</Text>
-              <Text style={styles.optionDesc}>
+              <Text style={themedStyles.optionTitle}>Google Meet</Text>
+              <Text style={themedStyles.optionDesc}>
                 Premium video calling with screen sharing and recording
               </Text>
             </View>
             <Icon name="arrow-forward" size={20} color="#64748B" />
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={styles.optionCard}
+          <TouchableOpacity
+            style={themedStyles.optionCard}
             onPress={() => openExternalProvider('https://www.zoom.us/')}
           >
-            <View style={[styles.optionIcon, { backgroundColor: '#2196F320' }]}>
+            <View style={[themedStyles.optionIcon, { backgroundColor: '#2196F320' }]}>
               <Icon name="videocam-outline" size={24} color="#2196F3" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.optionTitle}>Zoom</Text>
-              <Text style={styles.optionDesc}>
+              <Text style={themedStyles.optionTitle}>Zoom</Text>
+              <Text style={themedStyles.optionDesc}>
                 Industry standard with advanced features and recording
               </Text>
             </View>
             <Icon name="arrow-forward" size={20} color="#64748B" />
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={styles.optionCard}
+          <TouchableOpacity
+            style={themedStyles.optionCard}
             onPress={() => openExternalProvider('https://www.skype.com/')}
           >
-            <View style={[styles.optionIcon, { backgroundColor: '#0EA5E920' }]}>
+            <View style={[themedStyles.optionIcon, { backgroundColor: '#0EA5E920' }]}>
               <Icon name="call" size={24} color="#0EA5E9" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.optionTitle}>Skype</Text>
-              <Text style={styles.optionDesc}>
+              <Text style={themedStyles.optionTitle}>Skype</Text>
+              <Text style={themedStyles.optionDesc}>
                 Video calling and messaging integrated
               </Text>
             </View>
@@ -136,27 +138,27 @@ export default function VideoCall({ route, navigation }: ProjectsScreenProps<'Vi
         </View>
 
         {/* Info Box */}
-        <View style={styles.infoBox}>
+        <View style={themedStyles.infoBox}>
           <Icon name="information-circle-outline" size={24} color="#3B82F6" />
           <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={styles.infoTitle}>Tip: Share Project ID</Text>
-            <Text style={styles.infoText}>
+            <Text style={themedStyles.infoTitle}>Tip: Share Project ID</Text>
+            <Text style={themedStyles.infoText}>
               Use this project ID when sharing the meeting link with your crew: {projectId}
             </Text>
           </View>
         </View>
 
         {/* Button to open recommended option */}
-        <TouchableOpacity style={styles.primaryButton} onPress={handleOpenJitsi}>
+        <TouchableOpacity style={themedStyles.primaryButton} onPress={handleOpenJitsi}>
           <Icon name="videocam" size={20} color="#FFF" style={{ marginRight: 8 }} />
-          <Text style={styles.primaryButtonText}>Open Jitsi Meet Now</Text>
+          <Text style={themedStyles.primaryButtonText}>Open Jitsi Meet Now</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.secondaryButton} 
+        <TouchableOpacity
+          style={themedStyles.secondaryButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.secondaryButtonText}>Go Back</Text>
+          <Text style={themedStyles.secondaryButtonText}>Go Back</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

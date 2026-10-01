@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
@@ -9,6 +10,7 @@ import { ProjectsScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
 
 export default function CreateProject({ navigation }: ProjectsScreenProps<'CreateProject'>) {
+  const themedStyles = usePaletteStyles(styles);
   const { tenantId } = useAuth();
   const [projectName, setProjectName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,19 +27,19 @@ export default function CreateProject({ navigation }: ProjectsScreenProps<'Creat
     }
 
     setLoading(true);
-    
+
     try {
       const { error } = await supabase
         .from('projects')
-        .insert([{ 
-          name: projectName, 
+        .insert([{
+          name: projectName,
           tenant_id: tenantId,
           status: 'pre-production',
           script_version: 1
         }]);
 
       if (error) throw error;
-      
+
       // Navigate back to Dashboard. Realtime subscription will auto-update the list.
       navigation.goBack();
     } catch (error: any) {
@@ -49,44 +51,44 @@ export default function CreateProject({ navigation }: ProjectsScreenProps<'Creat
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
+    <SafeAreaView style={themedStyles.container}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <View style={themedStyles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={themedStyles.backBtn}>
             <Icon name="arrow-back" size={24} color="#F8FAFC" />
           </TouchableOpacity>
-          <Text style={styles.title}>New Production</Text>
+          <Text style={themedStyles.title}>New Production</Text>
           <View style={{ width: 24 }} />
         </View>
 
-        <View style={styles.content}>
-          <Text style={styles.label}>Project Name</Text>
+        <View style={themedStyles.content}>
+          <Text style={themedStyles.label}>Project Name</Text>
           <TextInput
-            style={styles.input}
+            style={themedStyles.input}
             placeholder="e.g. The Matrix 4"
             placeholderTextColor="#64748B"
             value={projectName}
             onChangeText={setProjectName}
             autoFocus
           />
-          <Text style={styles.helperText}>
+          <Text style={themedStyles.helperText}>
             You can modify settings, upload scripts, and assign crew members after the project is created.
           </Text>
         </View>
 
-        <View style={styles.footer}>
-          <AnimatedPressable 
-            style={[styles.button, !projectName.trim() && styles.buttonDisabled]} 
-            onPress={handleCreate} 
+        <View style={themedStyles.footer}>
+          <AnimatedPressable
+            style={[themedStyles.button, !projectName.trim() && themedStyles.buttonDisabled]}
+            onPress={handleCreate}
             disabled={loading || !projectName.trim()}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Create Project</Text>
+              <Text style={themedStyles.buttonText}>Create Project</Text>
             )}
           </AnimatedPressable>
         </View>

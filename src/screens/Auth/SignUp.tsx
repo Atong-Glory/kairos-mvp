@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { AuthScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
+import { useTheme } from '../../context/ThemeContext';
+import PaletteSwitcher from '../../components/PaletteSwitcher';
 
 export default function SignUp({ navigation }: AuthScreenProps<'SignUp'>) {
+  const themedStyles = usePaletteStyles(styles);
+  const { theme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [tenantName, setTenantName] = useState('');
@@ -63,28 +68,31 @@ export default function SignUp({ navigation }: AuthScreenProps<'SignUp'>) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>Start managing your productions</Text>
+    <SafeAreaView style={themedStyles.container}>
+      <View style={themedStyles.content}>
+        <Text style={themedStyles.title}>Create Account</Text>
+        <Text style={themedStyles.subtitle}>Start managing your productions</Text>
+        <View style={{ marginBottom: 20 }}>
+          <PaletteSwitcher compact />
+        </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Production House (Tenant)</Text>
+        <View style={themedStyles.inputContainer}>
+          <Text style={themedStyles.label}>Production House (Tenant)</Text>
           <TextInput
-            style={styles.input}
+            style={themedStyles.input}
             placeholder="e.g. DreamWorks"
-            placeholderTextColor="#888"
+            placeholderTextColor={theme.colors.textMuted}
             value={tenantName}
             onChangeText={setTenantName}
           />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email</Text>
+        <View style={themedStyles.inputContainer}>
+          <Text style={themedStyles.label}>Email</Text>
           <TextInput
-            style={styles.input}
+            style={themedStyles.input}
             placeholder="producer@kairos.com"
-            placeholderTextColor="#888"
+            placeholderTextColor={theme.colors.textMuted}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -92,30 +100,30 @@ export default function SignUp({ navigation }: AuthScreenProps<'SignUp'>) {
           />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Password</Text>
+        <View style={themedStyles.inputContainer}>
+          <Text style={themedStyles.label}>Password</Text>
           <TextInput
-            style={styles.input}
+            style={themedStyles.input}
             placeholder="••••••••"
-            placeholderTextColor="#888"
+            placeholderTextColor={theme.colors.textMuted}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
           />
         </View>
 
-        <AnimatedPressable style={styles.button} onPress={handleSignUp} disabled={loading}>
+        <AnimatedPressable style={themedStyles.button} onPress={handleSignUp} disabled={loading}>
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={theme.colors.accentContrast} />
           ) : (
-            <Text style={styles.buttonText}>Sign Up</Text>
+            <Text style={themedStyles.buttonText}>Sign Up</Text>
           )}
         </AnimatedPressable>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account? </Text>
+        <View style={themedStyles.footer}>
+          <Text style={themedStyles.footerText}>Already have an account? </Text>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.linkText}>Sign In</Text>
+            <Text style={themedStyles.linkText}>Sign In</Text>
           </TouchableOpacity>
         </View>
       </View>

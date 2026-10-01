@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { AppTheme, usePaletteStyles, useTheme } from '../../context/ThemeContext';
 import {
   ActivityIndicator,
   FlatList,
@@ -56,10 +57,12 @@ type ShootDayData = {
   updates: ShootDayUpdate[];
 };
 
-const STATUS_OPTIONS: { value: ShootStatus; label: string; color: string }[] = [
-  { value: 'up_next', label: 'Up Next', color: '#F59E0B' },
-  { value: 'shooting', label: 'Rolling', color: '#3B82F6' },
-  { value: 'wrapped', label: 'Wrapped', color: '#10B981' },
+type StatusColorToken = keyof Pick<AppTheme['colors'], 'warning' | 'accent' | 'positive'>;
+
+const STATUS_OPTIONS: { value: ShootStatus; label: string; color: StatusColorToken }[] = [
+  { value: 'up_next', label: 'Up Next', color: 'warning' },
+  { value: 'shooting', label: 'Rolling', color: 'accent' },
+  { value: 'wrapped', label: 'Wrapped', color: 'positive' },
 ];
 
 const getToday = () => {
@@ -86,6 +89,8 @@ const formatTime = (date: string) => new Date(date).toLocaleTimeString(undefined
 });
 
 export default function ShootDayBoard({ route, navigation }: ProjectsScreenProps<'ShootDayBoard'>) {
+  const themedStyles = usePaletteStyles(styles);
+  const { theme } = useTheme();
   const { projectId } = route.params;
   const { isEditor, refreshPermissions } = usePermissions();
   const [selectedDate, setSelectedDate] = useState(getToday);
@@ -226,22 +231,23 @@ export default function ShootDayBoard({ route, navigation }: ProjectsScreenProps
     const saving = savingSceneId === item.id;
 
     return (
-      <View style={styles.sceneCard}>
-        <View style={styles.sceneHeading}>
-          <View style={styles.sceneNumber}>
-            <Text style={styles.sceneNumberText}>{item.scene_number}</Text>
+      <View style={themedStyles.sceneCard}>
+        <View style={themedStyles.sceneHeading}>
+          <View style={themedStyles.sceneNumber}>
+            <Text style={themedStyles.sceneNumberText}>{item.scene_number}</Text>
           </View>
-          <View style={styles.sceneInfo}>
-            <Text style={styles.location} numberOfLines={2}>{item.location}</Text>
-            <Text style={styles.sceneMeta}>{item.day_night} · {item.scheduled_date}</Text>
+          <View style={themedStyles.sceneInfo}>
+            <Text style={themedStyles.location} numberOfLines={2}>{item.location}</Text>
+            <Text style={themedStyles.sceneMeta}>{item.day_night} · {item.scheduled_date}</Text>
           </View>
-          {saving ? <ActivityIndicator color="#60A5FA" /> : null}
+          {saving ? <ActivityIndicator color={theme.colors.accentStrong} /> : null}
         </View>
-        {item.description ? <Text style={styles.description}>{item.description}</Text> : null}
+        {item.description ? <Text style={themedStyles.description}>{item.description}</Text> : null}
 
-        <View style={styles.statusRow}>
+        <View style={themedStyles.statusRow}>
           {STATUS_OPTIONS.map(option => {
             const selected = currentStatus === option.value;
+            const statusColor = theme.colors[option.color];
             return (
               <TouchableOpacity
                 key={option.value}
@@ -250,12 +256,12 @@ export default function ShootDayBoard({ route, navigation }: ProjectsScreenProps
                 disabled={!canEdit || !isOnline || saving || selected}
                 onPress={() => void recordUpdate(item, 'status', option.value)}
                 style={[
-                  styles.statusButton,
-                  selected && { backgroundColor: `${option.color}24`, borderColor: option.color },
-                  (!canEdit || !isOnline) && styles.disabledButton,
+                  themedStyles.statusButton,
+                  selected && { backgroundColor: `${statusColor}24`, borderColor: statusColor },
+                  (!canEdit || !isOnline) && themedStyles.disabledButton,
                 ]}
               >
-                <Text style={[styles.statusButtonText, selected && { color: option.color }]}>{option.label}</Text>
+                <Text style={[themedStyles.statusButtonText, selected && { color: statusColor }]}>{option.label}</Text>
               </TouchableOpacity>
             );
           })}
@@ -266,10 +272,10 @@ export default function ShootDayBoard({ route, navigation }: ProjectsScreenProps
               setMovingScene(item);
               setCalendarVisible(true);
             }}
-            style={[styles.moveButton, (!canEdit || !isOnline) && styles.disabledButton]}
+            style={[themedStyles.moveButton, (!canEdit || !isOnline) && themedStyles.disabledButton]}
           >
-            <Icon name="calendar-outline" size={15} color="#F87171" />
-            <Text style={styles.moveButtonText}>Move</Text>
+            <Icon name="calendar-outline" size={15} color={theme.colors.danger} />
+            <Text style={themedStyles.moveButtonText}>Move</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -284,11 +290,11 @@ export default function ShootDayBoard({ route, navigation }: ProjectsScreenProps
       : `${actor} marked Scene ${sceneNumber} ${item.new_status?.replace('_', ' ')}.`;
 
     return (
-      <View style={styles.activityRow}>
-        <View style={[styles.activityDot, item.event_type === 'rescheduled' && styles.moveDot]} />
-        <View style={styles.activityText}>
-          <Text style={styles.activitySummary}>{summary}</Text>
-          <Text style={styles.activityTime}>{formatTime(item.created_at)}</Text>
+      <View style={themedStyles.activityRow}>
+        <View style={[themedStyles.activityDot, item.event_type === 'rescheduled' && themedStyles.moveDot]} />
+        <View style={themedStyles.activityText}>
+          <Text style={themedStyles.activitySummary}>{summary}</Text>
+          <Text style={themedStyles.activityTime}>{formatTime(item.created_at)}</Text>
         </View>
       </View>
     );
@@ -296,37 +302,37 @@ export default function ShootDayBoard({ route, navigation }: ProjectsScreenProps
 
   if (isLoading && !boardData) {
     return (
-      <SafeAreaView style={styles.center}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+      <SafeAreaView style={themedStyles.center}>
+        <ActivityIndicator size="large" color={theme.colors.accent} />
       </SafeAreaView>
     );
   }
 
   if (error && !boardData) {
     return (
-      <SafeAreaView style={styles.center}>
-        <Icon name="cloud-offline-outline" size={44} color="#64748B" />
-        <Text style={styles.errorTitle}>Shoot day unavailable</Text>
-        <Text style={styles.errorText}>{error.message}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => void refresh()}>
-          <Text style={styles.retryText}>Try again</Text>
+      <SafeAreaView style={themedStyles.center}>
+        <Icon name="cloud-offline-outline" size={44} color={theme.colors.textMuted} />
+        <Text style={themedStyles.errorTitle}>Shoot day unavailable</Text>
+        <Text style={themedStyles.errorText}>{error.message}</Text>
+        <TouchableOpacity style={themedStyles.retryButton} onPress={() => void refresh()}>
+          <Text style={themedStyles.retryText}>Try again</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="arrow-back" size={23} color="#F8FAFC" />
+    <SafeAreaView style={themedStyles.container}>
+      <View style={themedStyles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={themedStyles.backButton}>
+          <Icon name="arrow-back" size={23} color={theme.colors.text} />
         </TouchableOpacity>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Live Shoot Day</Text>
-          <Text style={styles.headerSubtitle}>{scenes.length} scheduled scene{scenes.length === 1 ? '' : 's'}</Text>
+        <View style={themedStyles.headerTitleContainer}>
+          <Text style={themedStyles.headerTitle}>Live Shoot Day</Text>
+          <Text style={themedStyles.headerSubtitle}>{scenes.length} scheduled scene{scenes.length === 1 ? '' : 's'}</Text>
         </View>
-        <TouchableOpacity accessibilityRole="button" onPress={() => void refresh()} style={styles.refreshButton}>
-          {isLoading ? <ActivityIndicator color="#60A5FA" /> : <Icon name="refresh-outline" size={22} color="#F8FAFC" />}
+        <TouchableOpacity accessibilityRole="button" onPress={() => void refresh()} style={themedStyles.refreshButton}>
+          {isLoading ? <ActivityIndicator color={theme.colors.accentStrong} /> : <Icon name="refresh-outline" size={22} color={theme.colors.text} />}
         </TouchableOpacity>
       </View>
 
@@ -334,62 +340,62 @@ export default function ShootDayBoard({ route, navigation }: ProjectsScreenProps
         data={scenes}
         keyExtractor={scene => scene.id}
         renderItem={renderScene}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={themedStyles.content}
         ListHeaderComponent={(
           <>
-            <View style={styles.dateSelector}>
-              <TouchableOpacity accessibilityLabel="Previous day" onPress={() => setSelectedDate(date => shiftDate(date, -1))} style={styles.dateArrow}>
-                <Icon name="chevron-back" size={20} color="#CBD5E1" />
+            <View style={themedStyles.dateSelector}>
+              <TouchableOpacity accessibilityLabel="Previous day" onPress={() => setSelectedDate(date => shiftDate(date, -1))} style={themedStyles.dateArrow}>
+                <Icon name="chevron-back" size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => { setMovingScene(null); setCalendarVisible(true); }} style={styles.dateButton}>
-                <Icon name="calendar-outline" size={17} color="#60A5FA" />
-                <Text style={styles.dateText}>{formatDate(selectedDate)}</Text>
-                <Icon name="chevron-down" size={16} color="#94A3B8" />
+              <TouchableOpacity onPress={() => { setMovingScene(null); setCalendarVisible(true); }} style={themedStyles.dateButton}>
+                <Icon name="calendar-outline" size={17} color={theme.colors.accentStrong} />
+                <Text style={themedStyles.dateText}>{formatDate(selectedDate)}</Text>
+                <Icon name="chevron-down" size={16} color={theme.colors.textSecondary} />
               </TouchableOpacity>
-              <TouchableOpacity accessibilityLabel="Next day" onPress={() => setSelectedDate(date => shiftDate(date, 1))} style={styles.dateArrow}>
-                <Icon name="chevron-forward" size={20} color="#CBD5E1" />
+              <TouchableOpacity accessibilityLabel="Next day" onPress={() => setSelectedDate(date => shiftDate(date, 1))} style={themedStyles.dateArrow}>
+                <Icon name="chevron-forward" size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             {!isOnline || (isFromCache && boardData !== null) ? (
-              <View style={styles.offlineNotice}>
-                <Icon name="cloud-offline-outline" size={16} color="#FBBF24" />
-                <Text style={styles.offlineText}>
+              <View style={themedStyles.offlineNotice}>
+                <Icon name="cloud-offline-outline" size={16} color={theme.colors.warning} />
+                <Text style={themedStyles.offlineText}>
                   {isOnline ? 'Showing saved data. Refresh to load the latest changes.' : 'Offline · showing saved data; updates are disabled.'}
                 </Text>
               </View>
             ) : null}
 
             {!permissionLoading && !canEdit ? (
-              <View style={styles.readOnlyNotice}>
-                <Icon name="eye-outline" size={16} color="#94A3B8" />
-                <Text style={styles.readOnlyText}>View-only access · editors can update scene status and dates.</Text>
+              <View style={themedStyles.readOnlyNotice}>
+                <Icon name="eye-outline" size={16} color={theme.colors.textSecondary} />
+                <Text style={themedStyles.readOnlyText}>View-only access · editors can update scene status and dates.</Text>
               </View>
             ) : null}
 
-            <View style={styles.sectionHeading}>
-              <Text style={styles.sectionTitle}>Today on set</Text>
-              <Text style={styles.sectionHint}>Up Next → Rolling → Wrapped</Text>
+            <View style={themedStyles.sectionHeading}>
+              <Text style={themedStyles.sectionTitle}>Today on set</Text>
+              <Text style={themedStyles.sectionHint}>Up Next → Rolling → Wrapped</Text>
             </View>
           </>
         )}
         ListEmptyComponent={(
-          <View style={styles.emptyCard}>
-            <Icon name="film-outline" size={40} color="#475569" />
-            <Text style={styles.emptyTitle}>No scenes scheduled</Text>
-            <Text style={styles.emptyText}>Schedule scenes for this date in Scene Manager to see them on the board.</Text>
+          <View style={themedStyles.emptyCard}>
+            <Icon name="film-outline" size={40} color={theme.colors.border} />
+            <Text style={themedStyles.emptyTitle}>No scenes scheduled</Text>
+            <Text style={themedStyles.emptyText}>Schedule scenes for this date in Scene Manager to see them on the board.</Text>
             <TouchableOpacity onPress={() => navigation.navigate('SceneManager', { projectId })}>
-              <Text style={styles.emptyLink}>Open Scene Manager</Text>
+              <Text style={themedStyles.emptyLink}>Open Scene Manager</Text>
             </TouchableOpacity>
           </View>
         )}
         ListFooterComponent={(
-          <View style={styles.activitySection}>
-            <Text style={styles.sectionTitle}>Recent changes</Text>
+          <View style={themedStyles.activitySection}>
+            <Text style={themedStyles.sectionTitle}>Recent changes</Text>
             {updates.length > 0 ? (
               updates.map(update => <View key={update.id}>{renderUpdate({ item: update })}</View>)
             ) : (
-              <Text style={styles.noActivity}>Shoot-day changes will appear here.</Text>
+              <Text style={themedStyles.noActivity}>Shoot-day changes will appear here.</Text>
             )}
           </View>
         )}
@@ -401,35 +407,35 @@ export default function ShootDayBoard({ route, navigation }: ProjectsScreenProps
         animationType="slide"
         onRequestClose={() => { setCalendarVisible(false); setMovingScene(null); }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.calendarSheet}>
-            <View style={styles.modalHandle} />
-            <Text style={styles.calendarTitle}>
+        <View style={themedStyles.modalOverlay}>
+          <View style={themedStyles.calendarSheet}>
+            <View style={themedStyles.modalHandle} />
+            <Text style={themedStyles.calendarTitle}>
               {movingScene ? `Move Scene ${movingScene.scene_number}` : 'Choose shoot date'}
             </Text>
-            {movingScene ? <Text style={styles.calendarHint}>Select a new date for this scene.</Text> : null}
+            {movingScene ? <Text style={themedStyles.calendarHint}>Select a new date for this scene.</Text> : null}
             <Calendar
               current={movingScene ? undefined : selectedDate}
               onDayPress={handleCalendarDayPress}
-              markedDates={{ [selectedDate]: { selected: true, selectedColor: '#2563EB' } }}
+              markedDates={{ [selectedDate]: { selected: true, selectedColor: theme.colors.accent } }}
               theme={{
-                backgroundColor: '#1E293B',
-                calendarBackground: '#1E293B',
-                textSectionTitleColor: '#94A3B8',
-                selectedDayBackgroundColor: '#3B82F6',
-                selectedDayTextColor: '#FFFFFF',
-                todayTextColor: '#60A5FA',
-                dayTextColor: '#F8FAFC',
-                textDisabledColor: '#475569',
-                arrowColor: '#60A5FA',
-                monthTextColor: '#F8FAFC',
+                backgroundColor: theme.colors.surface,
+                calendarBackground: theme.colors.surface,
+                textSectionTitleColor: theme.colors.textSecondary,
+                selectedDayBackgroundColor: theme.colors.accent,
+                selectedDayTextColor: theme.colors.accentContrast,
+                todayTextColor: theme.colors.accentStrong,
+                dayTextColor: theme.colors.text,
+                textDisabledColor: theme.colors.textMuted,
+                arrowColor: theme.colors.accentStrong,
+                monthTextColor: theme.colors.text,
               }}
             />
             <TouchableOpacity
-              style={styles.cancelButton}
+              style={themedStyles.cancelButton}
               onPress={() => { setCalendarVisible(false); setMovingScene(null); }}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={themedStyles.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>

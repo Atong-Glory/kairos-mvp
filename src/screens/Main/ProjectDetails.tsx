@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { usePaletteStyles } from '../../context/ThemeContext';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -7,6 +8,7 @@ import { ProjectsScreenProps } from '../../navigation/types';
 import AnimatedPressable from '../../components/AnimatedPressable';
 
 export default function ProjectDetails({ route, navigation }: ProjectsScreenProps<'ProjectDetails'>) {
+  const themedStyles = usePaletteStyles(styles);
   const { projectId, project: initialProject } = route.params;
   const [project, setProject] = useState(initialProject);
   const [loading, setLoading] = useState(!initialProject);
@@ -58,7 +60,7 @@ export default function ProjectDetails({ route, navigation }: ProjectsScreenProp
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
+      <SafeAreaView style={themedStyles.centerContainer}>
         <ActivityIndicator size="large" color="#3B82F6" />
       </SafeAreaView>
     );
@@ -66,42 +68,42 @@ export default function ProjectDetails({ route, navigation }: ProjectsScreenProp
 
   if (!project) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
-        <Text style={styles.errorText}>Project not found.</Text>
+      <SafeAreaView style={themedStyles.centerContainer}>
+        <Text style={themedStyles.errorText}>Project not found.</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+    <SafeAreaView style={themedStyles.container}>
+      <View style={themedStyles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={themedStyles.backBtn}>
           <Icon name="arrow-back" size={24} color="#F8FAFC" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{project.name}</Text>
-        <TouchableOpacity style={styles.settingsBtn} onPress={() => navigation.navigate('ProjectSettings', { projectId, project })}>
+        <Text style={themedStyles.headerTitle} numberOfLines={1}>{project.name}</Text>
+        <TouchableOpacity style={themedStyles.settingsBtn} onPress={() => navigation.navigate('ProjectSettings', { projectId, project })}>
           <Icon name="settings-outline" size={24} color="#F8FAFC" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.overviewCard}>
-          <View style={styles.overviewHeader}>
-            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(project.status) }]}>
-              <Text style={styles.statusText}>{project.status.toUpperCase()}</Text>
+      <ScrollView contentContainerStyle={themedStyles.content}>
+        <View style={themedStyles.overviewCard}>
+          <View style={themedStyles.overviewHeader}>
+            <View style={[themedStyles.statusBadge, { backgroundColor: getStatusColor(project.status) }]}>
+              <Text style={themedStyles.statusText}>{project.status.toUpperCase()}</Text>
             </View>
-            <Text style={styles.versionText}>Script v{project.script_version}</Text>
+            <Text style={themedStyles.versionText}>Script v{project.script_version}</Text>
           </View>
-          <Text style={styles.dateText}>Created {new Date(project.created_at).toLocaleDateString()}</Text>
+          <Text style={themedStyles.dateText}>Created {new Date(project.created_at).toLocaleDateString()}</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Project Hub</Text>
+        <Text style={themedStyles.sectionTitle}>Project Hub</Text>
         
-        <View style={styles.grid}>
+        <View style={themedStyles.grid}>
           {features.map((feature) => (
             <AnimatedPressable 
               key={feature.id} 
-              style={styles.gridItem}
+              style={themedStyles.gridItem}
               scaleValue={0.97}
               onPress={() => {
                 if (feature.id === 'shoot-day') {
@@ -121,10 +123,10 @@ export default function ProjectDetails({ route, navigation }: ProjectsScreenProp
                 }
               }}
             >
-              <View style={[styles.iconContainer, { backgroundColor: `${feature.color}20` }]}>
+              <View style={[themedStyles.iconContainer, { backgroundColor: `${feature.color}20` }]}>
                 <Icon name={feature.icon} size={28} color={feature.color} />
               </View>
-              <Text style={styles.gridItemTitle}>{feature.title}</Text>
+              <Text style={themedStyles.gridItemTitle}>{feature.title}</Text>
             </AnimatedPressable>
           ))}
         </View>
